@@ -33,16 +33,17 @@ public class CountryController implements CountryControllerInterface {
         while (true) {
             for (int i = 0; i < countries.length; i++) {
                 if (country.getCountryId() == countries[i].getCountryId()) {
-                    communicator.out(i + "*) " + countries[i].getCountry());
+                    communicator.out((i+1) + "*) " + countries[i].getCountry());
                 } else {
-                    communicator.out(i + ") " + countries[i].getCountry());
+                    communicator.out((i+1) + ") " + countries[i].getCountry());
                 }
             }
             String result = communicator.askFor("Choose a Country or type a new one");
             if (communicator.isInt(result)) {
-                int index = Integer.parseInt(result);
-                if (index < countries.length && index > -1) {
-                    return countries[index];
+                int index = Integer.parseInt(result)-1;
+                if (index >= 0 && index < countries.length) {
+                    country = countries[index];
+                    return country;
                 } else {
                     communicator.out("Invalid Option");
                 }
@@ -53,7 +54,8 @@ public class CountryController implements CountryControllerInterface {
                 newCountry.setLastUpdatedBy(this.user.getUserName());
                 newCountry.setCreatedDate(LocalDateTime.now());
                 newCountry.setLastUpdate(LocalDateTime.now());
-                return countryService.addCountry(newCountry);
+                country = countryService.addCountry(newCountry);
+                return country;
             }
         }
     }

@@ -45,16 +45,17 @@ public class CityController implements CityControllerInterface {
         while (true) {
             for (int i = 0; i < cities.length; i++) {
                 if (currentCity.getCityId() == cities[i].getCityId()) {
-                    communicator.out(i + "*) " + cities[i].getCity());
+                    communicator.out((i+1) + "*) " + cities[i].getCity());
                 } else {
-                    communicator.out(i + ") " + cities[i].getCity());
+                    communicator.out((i+1) + ") " + cities[i].getCity());
                 }
             }
             String result = communicator.askFor("Choose a city or type a new one");
             if (communicator.isInt(result)) {
-                int index = Integer.parseInt(result);
-                if (index < cities.length && index > -1) {
-                    return cities[index];
+                int index = Integer.parseInt(result)-1;
+                if (index >= 0 && index < cities.length) {
+                    currentCity = cities[index];
+                    return currentCity;
                 } else {
                     communicator.out("Invalid Option");
                 }
@@ -67,7 +68,8 @@ public class CityController implements CityControllerInterface {
                 newCity.setLastUpdatedBy(this.user.getUserName());
                 newCity.setCreatedDate(LocalDateTime.now());
                 newCity.setLastUpdate(LocalDateTime.now());
-                return this.cityService.addCity(newCity);
+                currentCity = this.cityService.addCity(newCity);
+                return currentCity;
             }
         }
     }

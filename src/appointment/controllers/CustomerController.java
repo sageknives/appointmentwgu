@@ -83,20 +83,20 @@ public class CustomerController implements CustomerControllerInterface {
         while (true) {
 
             for (int i = 0; i < customers.length; i++) {
-                System.out.println(i + ") " + customers[i].getCustomerName());
+                System.out.println((i+1) + ") " + customers[i].getCustomerName());
             }
-            communicator.out("n) Create new Customer");
+            communicator.out("0) Create new Customer");
             communicator.out("x) to go back");
             String response = communicator.askFor("Choose an option: ");
-            if (response.equals("n")) {
+            if (response.equals("0")) {
                 return this.addCustomer();
             }
             if (response.equals("x")) {
                 return null;
             }
             if (communicator.isInt(response)) {
-                int selection = Integer.parseInt(response);
-                if (selection > 0 && selection < customers.length) {
+                int selection = Integer.parseInt(response)-1;
+                if (selection >= 0 && selection < customers.length) {
                     customer = customers[selection];
                     break;
                 }
