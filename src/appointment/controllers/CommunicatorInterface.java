@@ -15,10 +15,14 @@ public interface CommunicatorInterface {
 
     String askFor(String request);
 
+    int askForInt(String request, int startRange, int endRange, int suggestion);
+
+    int askForInt(String request, int startRange, int endRange);
+
     boolean confirm();
 
     boolean isInt(String value);
 
     void out(String message);
-    
+
 }

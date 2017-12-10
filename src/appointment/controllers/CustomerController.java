@@ -35,11 +35,26 @@ public class CustomerController implements CustomerControllerInterface {
         CustomerInterface[] customers = this.getCustomers();
         int id = -1;
         while (true) {
-            //list customers
-            id = 0;
-            break;
+            for (int i = 0; i < customers.length; i++) {
+                System.out.println((i+1) + ") " + customers[i].getCustomerName());
+            }
+            communicator.out("0) Create new Customer");
+            communicator.out("x) to go back");
+            String response = communicator.askFor("Choose an option: ");
+            if (response.equals("0")) {
+                return this.addCustomer();
+            }
+            if (response.equals("x")) {
+                return null;
+            }
+            if (communicator.isInt(response)) {
+                int selection = Integer.parseInt(response)-1;
+                if (selection >= 0 && selection < customers.length) {
+                    return customers[selection];
+                }
+            }
+            communicator.out("Invalid option");
         }
-        return this.customerService.getCustomer(id);
     }
 
     @Override
@@ -77,7 +92,7 @@ public class CustomerController implements CustomerControllerInterface {
 
     @Override
     public CustomerInterface updateCustomer() {
-        communicator.out("Update Customer:");
+        communicator.out("Customers:");
         CustomerInterface[] customers = this.getCustomers();
         CustomerInterface customer = null;
         while (true) {

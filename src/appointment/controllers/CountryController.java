@@ -39,6 +39,7 @@ public class CountryController implements CountryControllerInterface {
                 }
             }
             String result = communicator.askFor("Choose a Country or type a new one");
+
             if (communicator.isInt(result)) {
                 int index = Integer.parseInt(result)-1;
                 if (index >= 0 && index < countries.length) {

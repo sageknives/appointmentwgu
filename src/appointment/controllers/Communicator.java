@@ -12,7 +12,8 @@ import java.util.Scanner;
  * @author sagegatzke
  */
 public class Communicator implements CommunicatorInterface {
-        private final Scanner in = new Scanner(System.in);
+
+    private final Scanner in = new Scanner(System.in);
 
     @Override
     public String askFor(String request, String suggestion) {
@@ -32,12 +33,40 @@ public class Communicator implements CommunicatorInterface {
     public String askFor(String request) {
         return askFor(request, null);
     }
-    
+
     @Override
-    public void out(String message){
+    public int askForInt(String request, int startRange, int endRange, int suggestion) {
+        while (true) {
+            out(request);
+            if (suggestion > -1) {
+                out(suggestion + "");
+            }
+            String response = in.nextLine();
+            if (response.equals("") && suggestion != -1) {
+                return suggestion;
+            } else if(isInt(response)) {
+                int intResponse = Integer.parseInt(response);
+                if(intResponse < startRange || (endRange != -1 && intResponse > endRange)){
+                    out("Integer between " + startRange + " and " + endRange + " is Required");
+                }else{
+                    return intResponse;
+                }
+            }else{
+                out("Integer is required");
+            }
+        }
+    }
+
+    @Override
+    public int askForInt(String request, int startRange, int endRange) {
+        return askForInt(request, startRange, endRange, -1);
+    }
+
+    @Override
+    public void out(String message) {
         System.out.println(message);
     }
-    
+
     @Override
     public boolean confirm() {
         while (true) {
@@ -51,7 +80,7 @@ public class Communicator implements CommunicatorInterface {
             out("Invalid option");
         }
     }
-    
+
     @Override
     public boolean isInt(String value) {
         try {

@@ -55,6 +55,7 @@ public class CityController implements CityControllerInterface {
                 int index = Integer.parseInt(result)-1;
                 if (index >= 0 && index < cities.length) {
                     currentCity = cities[index];
+                    currentCity.setCountry(country);
                     return currentCity;
                 } else {
                     communicator.out("Invalid Option");
@@ -69,6 +70,7 @@ public class CityController implements CityControllerInterface {
                 newCity.setCreatedDate(LocalDateTime.now());
                 newCity.setLastUpdate(LocalDateTime.now());
                 currentCity = this.cityService.addCity(newCity);
+                currentCity.setCountry(country);
                 return currentCity;
             }
         }
