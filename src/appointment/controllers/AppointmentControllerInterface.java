@@ -22,4 +22,6 @@ public interface AppointmentControllerInterface {
 
     AppointmentInterface updateAppointment();
     
+    void showAppointment(AppointmentInterface appointment);
+    
 }

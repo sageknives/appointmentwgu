@@ -17,6 +17,8 @@ public interface CustomerControllerInterface {
     CustomerInterface addCustomer();
 
     CustomerInterface getCustomer();
+    
+    CustomerInterface getCustomer(CustomerInterface customer);
 
     CustomerInterface[] getCustomers();
 

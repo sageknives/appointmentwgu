@@ -46,7 +46,10 @@ public class Communicator implements CommunicatorInterface {
                 return suggestion;
             } else if(isInt(response)) {
                 int intResponse = Integer.parseInt(response);
-                if(intResponse < startRange || (endRange != -1 && intResponse > endRange)){
+                if(intResponse < startRange){
+                    out("Integer must be greater than or equal to " + startRange);
+                }
+                else if(intResponse < startRange || (endRange != -1 && intResponse > endRange)){
                     out("Integer between " + startRange + " and " + endRange + " is Required");
                 }else{
                     return intResponse;

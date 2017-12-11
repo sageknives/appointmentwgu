@@ -32,25 +32,41 @@ public class CustomerController implements CustomerControllerInterface {
 
     @Override
     public CustomerInterface getCustomer() {
+        return this.getCustomer(null);
+    }
+    @Override
+    public CustomerInterface getCustomer(CustomerInterface currentCustomer) {
+        CustomerInterface customer = new Customer();
         CustomerInterface[] customers = this.getCustomers();
         int id = -1;
         while (true) {
-            for (int i = 0; i < customers.length; i++) {
-                System.out.println((i+1) + ") " + customers[i].getCustomerName());
-            }
             communicator.out("0) Create new Customer");
+            for (int i = 0; i < customers.length; i++) {
+                if(currentCustomer != null && currentCustomer.getCustomerId() == customers[i].getCustomerId()){
+                    communicator.out((i+1) + "*) " + customers[i].getCustomerName());
+                }else{
+                    communicator.out((i+1) + ") " + customers[i].getCustomerName());
+                }
+            }
             communicator.out("x) to go back");
+            communicator.out("or press return to keep the current selection");
             String response = communicator.askFor("Choose an option: ");
             if (response.equals("0")) {
-                return this.addCustomer();
+                customer = this.addCustomer();
+                return customer;
             }
             if (response.equals("x")) {
+                //should probably throw something instead of nulling back
                 return null;
+            }
+            if(response.equals("") && currentCustomer != null){
+                return currentCustomer;
             }
             if (communicator.isInt(response)) {
                 int selection = Integer.parseInt(response)-1;
                 if (selection >= 0 && selection < customers.length) {
-                    return customers[selection];
+                    customer = customers[selection];
+                    return customer;
                 }
             }
             communicator.out("Invalid option");
@@ -78,6 +94,7 @@ public class CustomerController implements CustomerControllerInterface {
             AddressInterface address = addressController.addAddress();
             customer.setAddress(address);
             showCustomer(customer);
+            communicator.out("Customer Confirmation:");
             if (communicator.confirm()) {
                 customer.setCreatedBy(this.user.getUserName());
                 customer.setLastUpdatedBy(this.user.getUserName());
@@ -124,6 +141,7 @@ public class CustomerController implements CustomerControllerInterface {
             AddressInterface address = addressController.updateAddress(customer.getAddress());
             customer.setAddress(address);
             showCustomer(customer);
+            communicator.out("Customer Confirmation:");
             if (communicator.confirm()) {
                 customer.setLastUpdatedBy(this.user.getUserName());
                 customer.setLastUpdate(LocalDateTime.now());

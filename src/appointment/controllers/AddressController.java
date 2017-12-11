@@ -33,30 +33,55 @@ public class AddressController implements AddressControllerInterface {
     @Override
     public AddressInterface addAddress() {
         AddressInterface address = new Address();
-        CityInterface city = cityController.addCity();
-        address.setCity(city);
-        address.setAddress(communicator.askFor("Please enter the Customer's Address 1"));
-        address.setAddress2(communicator.askFor("Please enter the Customer's Address 2"));
-        address.setPostalCode(communicator.askFor("Please enter the Customer's Postal Code"));
-        address.setPhone(communicator.askFor("Please enter the Customer's Phone number"));
-        address.setCreatedBy(this.user.getUserName());
-        address.setLastUpdatedBy(this.user.getUserName());
-        address.setCreatedDate(LocalDateTime.now());
-        address.setLastUpdate(LocalDateTime.now());
+        CityInterface city = null;
+        boolean firstTime = true;
+        while (true) {
+            if(firstTime) {
+                city = cityController.addCity();
+                firstTime = false;
+            }
+            else{
+                city = cityController.updateCity(address.getCity());
+            }
+            
+            address.setCity(city);
+            address = updateAddressDetails(address);
+            showAddress(address);
+            communicator.out("Address Confirmation:");
+            if (communicator.confirm()) {
+                address.setCreatedBy(this.user.getUserName());
+                address.setLastUpdatedBy(this.user.getUserName());
+                address.setCreatedDate(LocalDateTime.now());
+                address.setLastUpdate(LocalDateTime.now());
+                break;
+            }
+        }
         return addressService.addAddress(address);
     }
 
     @Override
     public AddressInterface updateAddress(AddressInterface address) {
-        CityInterface city = cityController.updateCity(address.getCity());
-        address.setCity(city);
+        while (true) {
+            CityInterface city = cityController.updateCity(address.getCity());
+            address.setCity(city);
+            address = updateAddressDetails(address);
+            showAddress(address);
+            communicator.out("Address Confirmation:");
+            if (communicator.confirm()) {
+                address.setLastUpdatedBy(this.user.getUserName());
+                address.setLastUpdate(LocalDateTime.now());
+                break;
+            }
+        }
+        return addressService.updateAddress(address);
+    }
+
+    private AddressInterface updateAddressDetails(AddressInterface address) {
         address.setAddress(communicator.askFor("Please enter the Customer's Address 1", address.getAddress()));
         address.setAddress2(communicator.askFor("Please enter the Customer's Address 2", address.getAddress2()));
         address.setPostalCode(communicator.askFor("Please enter the Customer's Postal Code", address.getPostalCode()));
         address.setPhone(communicator.askFor("Please enter the Customer's Phone number", address.getPhone()));
-        address.setLastUpdatedBy(this.user.getUserName());
-        address.setLastUpdate(LocalDateTime.now());
-        return addressService.updateAddress(address);
+        return address;
     }
 
     @Override

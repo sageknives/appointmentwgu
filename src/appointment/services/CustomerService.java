@@ -74,7 +74,7 @@ public class CustomerService extends BaseService implements CustomerServiceInter
             validStatement.closeOnCompletion();
         } catch (SQLException ex) {
             //dbAppointments = null;
-//            ex.printStackTrace();
+            ex.printStackTrace();
         }
         CustomerInterface[] dbCustomers = new CustomerInterface[customers.size()];
         dbCustomers = customers.toArray(dbCustomers);
@@ -190,7 +190,7 @@ public class CustomerService extends BaseService implements CustomerServiceInter
             + "FROM customer as cu "
             + "join address as ad on cu.addressId = ad.addressId "
             + "join city as ci on ci.cityId = ad.cityId "
-            + "join country as co on co.countryId = ci.cityId ";
+            + "join country as co on co.countryId = ci.countryId ";
     }
 
     private CustomerInterface createCustomerFromResult(ResultSet result) throws SQLException {

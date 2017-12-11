@@ -219,7 +219,7 @@ public class AppointmentService extends BaseService implements AppointmentServic
             + "join customer as cu on ap.customerId = cu.customerId "
             + "join address as ad on cu.addressId = ad.addressId "
             + "join city as ci on ci.cityId = ad.cityId "
-            + "join country as co on co.countryId = ci.cityId ";
+            + "join country as co on co.countryId = ci.countryId ";
     }
 
     private AppointmentInterface createAppointmentFromResult(ResultSet result) throws SQLException {
