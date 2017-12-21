@@ -85,8 +85,7 @@ public class CityService extends BaseService implements CityServiceInterface {
     }
 
     private String getInsertStatement(CityInterface city) {
-        int id = Math.abs(provider.hashCode());
-        System.out.println("New city Id is " + id);
+        int id = Math.abs(UUID.randomUUID().hashCode());
         city.setCityId(id);
         return "INSERT INTO city "
             + "(`cityId`, "

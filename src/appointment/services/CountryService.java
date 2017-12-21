@@ -78,7 +78,7 @@ public class CountryService extends BaseService implements CountryServiceInterfa
     }
 
     private String getInsertStatement(CountryInterface country){
-        int id = Math.abs(provider.hashCode());
+        int id = Math.abs(UUID.randomUUID().hashCode());
         country.setCountryId(id);
         return "INSERT INTO country "
             +"(`countryId`, "

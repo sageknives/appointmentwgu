@@ -12,11 +12,13 @@ import appointment.models.User;
 import appointment.models.UserInterface;
 import appointment.services.AppointmentService;
 import appointment.services.AppointmentServiceInterface;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Scanner;
@@ -39,15 +41,55 @@ public class AppointmentController implements AppointmentControllerInterface {
     }
 
     @Override
-    public AppointmentInterface getAppointment() {
+    public void showWeeklySchedule() {
         AppointmentInterface[] appointments = this.getAppointments();
-        int id = -1;
+        LocalDate sld = LocalDateTime.now().toLocalDate();
         while (true) {
-            //list appointments
-            id = 0;
-            break;
+            if (sld.getDayOfWeek().getValue() == 1) {
+                break;
+            }
+            sld = sld.plusDays(-1);
         }
-        return this.appointmentService.getAppointment(id);
+        ZonedDateTime end = sld.plusDays(8).atStartOfDay(ZoneId.systemDefault());
+        ZonedDateTime start = sld.atStartOfDay(ZoneId.systemDefault());
+        communicator.lineBreak();
+        appointments = Arrays.stream(appointments).filter(a -> {
+            return a.getStart().isAfter(start) && a.getEnd().isBefore(end);
+        }).toArray(size -> new Appointment[size]);
+        this.communicator.out("This week's schedule is:");
+        for (int i = 0; i < appointments.length; i++) {
+            this.showAppointment(appointments[i]);
+        }
+    }
+
+    @Override
+    public void showMonthlySchedule() {
+        AppointmentInterface[] appointments = this.getAppointments();
+        LocalDate sld = LocalDateTime.now().toLocalDate();
+        while (true) {
+            if (sld.getDayOfMonth() == 1) {
+                break;
+            }
+            sld = sld.plusDays(-1);
+        }
+        LocalDate eld = LocalDate.of(sld.getYear(), sld.getMonth(), 28);
+        while (true) {
+            if (eld.getMonthValue() != sld.getMonthValue()) {
+                break;
+            }
+            eld = eld.plusDays(1);
+        }
+        ZonedDateTime end = eld.atStartOfDay(ZoneId.systemDefault());
+        ZonedDateTime start = sld.atStartOfDay(ZoneId.systemDefault());
+        //get now figure out the beginning of the month and the end
+        appointments = Arrays.stream(appointments).filter(a -> {
+            return a.getStart().isAfter(start) && a.getEnd().isBefore(end);
+        }).toArray(size -> new Appointment[size]);
+        communicator.lineBreak();
+        this.communicator.out("Your monthly schedule is:");
+        for (int i = 0; i < appointments.length; i++) {
+            this.showAppointment(appointments[i]);
+        }
     }
 
     @Override
@@ -225,6 +267,7 @@ public class AppointmentController implements AppointmentControllerInterface {
 
     @Override
     public void showAppointment(AppointmentInterface appointment) {
+        communicator.lineBreak();
         communicator.out("Title: " + appointment.getTitle());
         communicator.out("Description: " + appointment.getDescription());
         communicator.out("Location: " + appointment.getLocation());

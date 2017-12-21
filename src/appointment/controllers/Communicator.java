@@ -17,10 +17,12 @@ public class Communicator implements CommunicatorInterface {
 
     @Override
     public String askFor(String request, String suggestion) {
+        this.lineBreak();
         out(request);
         if (suggestion != null) {
             out(suggestion);
         }
+        this.lineBreak();
         String response = in.nextLine();
         if (response.equals("")) {
             return suggestion == null ? "" : suggestion;
@@ -37,10 +39,13 @@ public class Communicator implements CommunicatorInterface {
     @Override
     public int askForInt(String request, int startRange, int endRange, int suggestion) {
         while (true) {
-            out(request);
+            this.lineBreak();
+            this.out(request);
+            
             if (suggestion > -1) {
                 out(suggestion + "");
             }
+            this.lineBreak();
             String response = in.nextLine();
             if (response.equals("") && suggestion != -1) {
                 return suggestion;
@@ -69,11 +74,18 @@ public class Communicator implements CommunicatorInterface {
     public void out(String message) {
         System.out.println(message);
     }
+    
+    @Override
+    public void lineBreak(){
+        this.out("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+    }
 
     @Override
     public boolean confirm() {
         while (true) {
+            this.lineBreak();
             String response = askFor("y) for yes \nn) for no");
+            this.lineBreak();
             if (response.equals("y")) {
                 return true;
             }

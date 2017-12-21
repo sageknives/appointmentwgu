@@ -43,8 +43,8 @@ public class AppointmentConsole {
         communicator.out("Welcome to your appointment app");
         user = new User();
         userController = new UserController(user);
-        customerController = new CustomerController(communicator,user);
-        appointmentController = new AppointmentController(communicator,user,customerController);
+        customerController = new CustomerController(communicator, user);
+        appointmentController = new AppointmentController(communicator, user, customerController);
 
         while (true) {
             displayMenu();
@@ -58,6 +58,7 @@ public class AppointmentConsole {
         user.setPassword(communicator.askFor("Please enter your Password"));
         UserInterface dbUser = userController.login(user);
         if (dbUser != null) {
+            communicator.lineBreak();
             communicator.out("Welcome " + dbUser.getUserName());
             menuState = MenuState.MAIN_MENU;
         } else {
@@ -88,11 +89,11 @@ public class AppointmentConsole {
                 break;
             }
             case "1": {
-                showWeekSchedule();
+                this.appointmentController.showWeeklySchedule();
                 break;
             }
             case "2": {
-                showMonthSchedule();
+                this.appointmentController.showMonthlySchedule();
                 break;
             }
             case "3": {
@@ -180,11 +181,14 @@ public class AppointmentConsole {
     }
 
     public void showStartMenu() {
+        communicator.lineBreak();
         communicator.out("0) Exit");
         communicator.out("1) Login");
     }
 
     public void showMainMenu() {
+        communicator.lineBreak();
+
         communicator.out("Main Menu:");
         communicator.out("0) Exit");
         communicator.out("1) View weekly schedule");
@@ -197,6 +201,7 @@ public class AppointmentConsole {
     }
 
     public void showReportMenu() {
+        communicator.lineBreak();
         communicator.out("Report Menu:");
         communicator.out("0) Main Menu");
         communicator.out("1) Generate number of appointments by month");
@@ -205,6 +210,7 @@ public class AppointmentConsole {
     }
 
     public void exitProgram() {
+        communicator.lineBreak();
         communicator.out("Goodbye");
         System.exit(0);
     }
@@ -322,17 +328,15 @@ public class AppointmentConsole {
 //        }
 //        return appointment;
 //    }
-
-    private void showWeekSchedule() {
-        System.out.println("Weekly Schedule:");
-        //get weekly schedule
-    }
-
-    private void showMonthSchedule() {
-        System.out.println("Monthly Schedule:");
-        //get monthly schedule
-    }
-
+//    private void showWeekSchedule() {
+//        System.out.println("Weekly Schedule:");
+//        //get weekly schedule
+//    }
+//
+//    private void showMonthSchedule() {
+//        System.out.println("Monthly Schedule:");
+//        //get monthly schedule
+//    }
     private void showMonthlyAppointmentReport() {
         System.out.println("Monthly appointment report:");
         //get monthly appointment report
@@ -421,5 +425,4 @@ public class AppointmentConsole {
 //    private ZonedDateTime addDateTime(ZonedDateTime start) {
 //        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 //    }
-
 }

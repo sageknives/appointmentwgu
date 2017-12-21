@@ -24,5 +24,7 @@ public interface CommunicatorInterface {
     boolean isInt(String value);
 
     void out(String message);
+    
+    void lineBreak();
 
 }

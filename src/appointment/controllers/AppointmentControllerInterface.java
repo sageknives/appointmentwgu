@@ -16,7 +16,9 @@ public interface AppointmentControllerInterface {
 
     AppointmentInterface addAppointment();
 
-    AppointmentInterface getAppointment();
+    void showWeeklySchedule();
+    
+    void showMonthlySchedule();
 
     AppointmentInterface[] getAppointments();
 
