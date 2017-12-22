@@ -96,6 +96,11 @@ public class AppointmentController implements AppointmentControllerInterface {
     public AppointmentInterface[] getAppointments() {
         return this.appointmentService.getAppointments(user.getUserName());
     }
+    
+    @Override
+    public AppointmentInterface[] getAllAppointments() {
+        return this.appointmentService.getAppointments(null);
+    }
 
     @Override
     public AppointmentInterface addAppointment() {
@@ -219,7 +224,7 @@ public class AppointmentController implements AppointmentControllerInterface {
         appointment.setTitle(communicator.askFor("Please enter a title", appointment.getTitle()));
         appointment.setDescription(communicator.askFor("Please enter a description", appointment.getDescription()));
         appointment.setLocation(communicator.askFor("Please enter a location", appointment.getLocation()));
-        appointment.setContact(communicator.askFor("Please enter a contact", appointment.getContact()));
+        appointment.setContact(communicator.askFor("Please enter an appointment type", appointment.getContact()));
         appointment.setUrl(communicator.askFor("Please enter a url", appointment.getUrl()));
         while (true) {
             if (appointment.getStart() != null) {
@@ -271,7 +276,7 @@ public class AppointmentController implements AppointmentControllerInterface {
         communicator.out("Title: " + appointment.getTitle());
         communicator.out("Description: " + appointment.getDescription());
         communicator.out("Location: " + appointment.getLocation());
-        communicator.out("Contact: " + appointment.getContact());
+        communicator.out("Appointment Type: " + appointment.getContact());
         communicator.out("Url: " + appointment.getUrl());
         communicator.out("Customer: " + appointment.getCustomer().getCustomerName());
         showDateTime(appointment.getStart(), "Start: ");

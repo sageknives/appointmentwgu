@@ -5,6 +5,7 @@
  */
 package appointment.services;
 
+import appointment.models.ConsultantInterface;
 import appointment.models.UserInterface;
 
 /**
@@ -16,5 +17,7 @@ public interface UserServiceInterface {
     UserInterface getUser(UserInterface user);
     
     UserInterface createUser(UserInterface user);
+    
+    ConsultantInterface[] getConsultants();
     
 }

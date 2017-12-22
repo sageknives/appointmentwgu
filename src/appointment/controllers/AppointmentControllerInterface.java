@@ -22,6 +22,8 @@ public interface AppointmentControllerInterface {
 
     AppointmentInterface[] getAppointments();
 
+    AppointmentInterface[] getAllAppointments();
+    
     AppointmentInterface updateAppointment();
     
     void showAppointment(AppointmentInterface appointment);

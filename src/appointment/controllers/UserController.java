@@ -5,6 +5,7 @@
  */
 package appointment.controllers;
 
+import appointment.models.ConsultantInterface;
 import javafx.stage.Stage;
 import appointment.models.UserInterface;
 import appointment.services.UserService;
@@ -38,6 +39,9 @@ public class UserController implements UserControllerInterface {
         return dbUser;
     }
     
+    public ConsultantInterface[] getConsultants(){
+        return this.userService.getConsultants();
+    }
     
     
 }

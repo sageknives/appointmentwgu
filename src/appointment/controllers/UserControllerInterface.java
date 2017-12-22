@@ -5,6 +5,7 @@
  */
 package appointment.controllers;
 
+import appointment.models.ConsultantInterface;
 import appointment.models.UserInterface;
 
 /**
@@ -15,5 +16,6 @@ public interface UserControllerInterface {
 
     UserInterface login(UserInterface user);
     UserInterface register(UserInterface user);
+    ConsultantInterface[] getConsultants();
 
 }

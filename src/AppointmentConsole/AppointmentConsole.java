@@ -11,6 +11,8 @@ import appointment.controllers.Communicator;
 import appointment.controllers.CommunicatorInterface;
 import appointment.controllers.CustomerController;
 import appointment.controllers.CustomerControllerInterface;
+import appointment.controllers.ReportController;
+import appointment.controllers.ReportControllerInterface;
 import appointment.controllers.UserController;
 import appointment.controllers.UserControllerInterface;
 import appointment.models.MenuState;
@@ -28,6 +30,7 @@ public class AppointmentConsole {
     private UserControllerInterface userController;
     private CustomerControllerInterface customerController;
     private AppointmentControllerInterface appointmentController;
+    private ReportControllerInterface reportController;
     private CommunicatorInterface communicator;
 
     /**
@@ -45,7 +48,8 @@ public class AppointmentConsole {
         userController = new UserController(user);
         customerController = new CustomerController(communicator, user);
         appointmentController = new AppointmentController(communicator, user, customerController);
-
+        reportController = new ReportController(communicator,appointmentController,userController);
+        
         while (true) {
             displayMenu();
             String response = communicator.askFor("Choose an option: ");
@@ -129,15 +133,15 @@ public class AppointmentConsole {
                 break;
             }
             case "1": {
-                showMonthlyAppointmentReport();
+                this.reportController.generateAppointmentCountByMonthReport();
                 break;
             }
             case "2": {
-                showConsultScheduleReport();
+                this.reportController.generateConsultantScheduleReport();
                 break;
             }
             case "3": {
-                showMagicReport();
+                this.reportController.generateAppointmentLeaderBoardReport();
                 break;
             }
             default: {
@@ -206,7 +210,7 @@ public class AppointmentConsole {
         communicator.out("0) Main Menu");
         communicator.out("1) Generate number of appointments by month");
         communicator.out("2) Generate schedule of all employees");
-        communicator.out("3) Fun magic");
+        communicator.out("3) Generate Consultant appointment leaderboard");
     }
 
     public void exitProgram() {

@@ -67,7 +67,11 @@ public class AppointmentService extends BaseService implements AppointmentServic
 
     private AppointmentInterface[] _getAppointments(String userName) {
         List<AppointmentInterface> appointments = new ArrayList<AppointmentInterface>();
-        String validAppointmentQuery = getSelectStatement() + " WHERE ap.createdBy = '" + userName + "' or ap.lastUpdateBy = '" + userName + "'";
+        String validAppointmentQuery = getSelectStatement();
+        if(userName != null) {
+            validAppointmentQuery += " WHERE ap.createdBy = '" + userName + "' or ap.lastUpdateBy = '" + userName + "'";
+        }
+        
         try {
             Statement findAppointmentStatement = conn.createStatement();
             ResultSet result = findAppointmentStatement.executeQuery(validAppointmentQuery);
