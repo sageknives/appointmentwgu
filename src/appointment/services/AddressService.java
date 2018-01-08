@@ -9,18 +9,18 @@ import appointment.models.AddressInterface;
 import java.util.UUID;
 import java.sql.SQLException;
 import java.sql.Statement;
+
 /**
  *
  * @author sagegatzke
  */
 public class AddressService extends BaseService implements AddressServiceInterface {
-    private final UUID provider = UUID.randomUUID();
 
     @Override
     public AddressInterface addAddress(AddressInterface address) {
         return this._addAddress(address);
     }
-    
+
     private AddressInterface _addAddress(AddressInterface address) {
         String validQuery = getInsertStatement(address);
         try {
@@ -29,9 +29,7 @@ public class AddressService extends BaseService implements AddressServiceInterfa
 
             insertStatement.closeOnCompletion();
         } catch (SQLException ex) {
-            //dbAppointments = null;
             System.out.println(ex.toString());
-            //ex.printStackTrace();
         }
         return address;
     }
@@ -40,7 +38,7 @@ public class AddressService extends BaseService implements AddressServiceInterfa
     public AddressInterface updateAddress(AddressInterface address) {
         return address;
     }
-    
+
     private AddressInterface _updateAddress(AddressInterface address) {
         String validQuery = getUpdateStatement(address);
         try {
@@ -49,51 +47,50 @@ public class AddressService extends BaseService implements AddressServiceInterfa
 
             validStatement.closeOnCompletion();
         } catch (SQLException ex) {
-            //dbAppointments = null;
             System.out.println(ex.toString());
-            //ex.printStackTrace();
+
         }
         return address;
     }
 
-    private String getInsertStatement(AddressInterface address){
-        int id = Math.abs(provider.hashCode());
+    private String getInsertStatement(AddressInterface address) {
+        int id = Math.abs(UUID.randomUUID().hashCode());
         address.setAddressId(id);
         return "INSERT INTO address "
-            + "(`addressId`, "
-            + "`address`, "
-            + "`address2`, "
-            + "`cityId`, "
-            + "`postalCode`, "
-            + "`phone`, "
-            + "`createDate`, "
-            + "`createdBy`, "
-            + "`lastUpdate`, "
-            + "`lastUpdateBy`) "
-            + "VALUES ("
-            + "'" + address.getAddressId() + "',"
-            + "'" + address.getAddress() + "', "
-            + "'" + address.getAddress2() + "',"
-            + "'" + address.getCity().getCityId() + "', "
-            + "'" + address.getPostalCode() + "',"
-            + "'" + address.getPhone() + "',"
-            + "'" + address.getCreatedDate() + "', "
-            + "'" + address.getCreatedBy() + "', "
-            + "'" + address.getLastUpdate() + "', "
-            + "'" + address.getLastUpdatedBy() + "')";
+                + "(`addressId`, "
+                + "`address`, "
+                + "`address2`, "
+                + "`cityId`, "
+                + "`postalCode`, "
+                + "`phone`, "
+                + "`createDate`, "
+                + "`createdBy`, "
+                + "`lastUpdate`, "
+                + "`lastUpdateBy`) "
+                + "VALUES ("
+                + "'" + address.getAddressId() + "',"
+                + "'" + address.getAddress() + "', "
+                + "'" + address.getAddress2() + "',"
+                + "'" + address.getCity().getCityId() + "', "
+                + "'" + address.getPostalCode() + "',"
+                + "'" + address.getPhone() + "',"
+                + "'" + address.getCreatedDate() + "', "
+                + "'" + address.getCreatedBy() + "', "
+                + "'" + address.getLastUpdate() + "', "
+                + "'" + address.getLastUpdatedBy() + "')";
     }
-    
-    private String getUpdateStatement(AddressInterface address){
+
+    private String getUpdateStatement(AddressInterface address) {
         return "UPDATE address "
-            + "SET `address`='"+address.getAddress()+"', "
-            + "`address2`='"+address.getAddress2()+"', "
-            + "`cityId`='"+address.getCity().getCityId()+"', "
-            + "`phone`='"+address.getPhone()+"', "
-            + "`postalCode`='"+address.getPostalCode()+"', "
-            + "`createDate`='"+address.getCreatedDate()+"', "
-            + "`createdBy`='"+address.getCreatedBy()+"', "
-            + "`lastUpdate`='"+address.getLastUpdate()+"', "
-            + "`lastUpdateBy`='"+address.getLastUpdatedBy()+"' "
-            + "WHERE `addressId`='"+address.getAddressId()+"'";
+                + "SET `address`='" + address.getAddress() + "', "
+                + "`address2`='" + address.getAddress2() + "', "
+                + "`cityId`='" + address.getCity().getCityId() + "', "
+                + "`phone`='" + address.getPhone() + "', "
+                + "`postalCode`='" + address.getPostalCode() + "', "
+                + "`createDate`='" + address.getCreatedDate() + "', "
+                + "`createdBy`='" + address.getCreatedBy() + "', "
+                + "`lastUpdate`='" + address.getLastUpdate() + "', "
+                + "`lastUpdateBy`='" + address.getLastUpdatedBy() + "' "
+                + "WHERE `addressId`='" + address.getAddressId() + "'";
     }
 }

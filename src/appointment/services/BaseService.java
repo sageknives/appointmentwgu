@@ -7,6 +7,7 @@ package appointment.services;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 
 /**
  *
@@ -19,8 +20,8 @@ public abstract class BaseService {
         try{
             Class.forName("com.mysql.jdbc.Driver");
             conn = DriverManager.getConnection("jdbc:mysql://52.206.157.109/U03uop", "U03uop", "53688089065");
-        }catch(Exception ex){
-            ex.printStackTrace();
+        }catch(ClassNotFoundException | SQLException ex){
+            System.out.println(ex.toString());
         }
         
     }

@@ -20,10 +20,10 @@ import java.time.LocalDateTime;
  */
 public class CityController implements CityControllerInterface {
 
-    private CityServiceInterface cityService = new CityService();
-    private CountryControllerInterface countryController;
-    private CommunicatorInterface communicator;
-    private UserInterface user;
+    private final CityServiceInterface cityService = new CityService();
+    private final CountryControllerInterface countryController;
+    private final CommunicatorInterface communicator;
+    private final UserInterface user;
 
     public CityController(CommunicatorInterface communicator, UserInterface user) {
         this.communicator = communicator;

@@ -6,7 +6,6 @@
 package appointment.controllers;
 
 import appointment.models.CustomerInterface;
-import appointment.models.UserInterface;
 
 /**
  *

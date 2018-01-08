@@ -28,10 +28,10 @@ import java.util.HashMap;
  */
 public class AppointmentController implements AppointmentControllerInterface {
 
-    private AppointmentServiceInterface appointmentService = new AppointmentService();
-    private CustomerControllerInterface customerController;
-    private CommunicatorInterface communicator;
-    private UserInterface user;
+    private final AppointmentServiceInterface appointmentService = new AppointmentService();
+    private final CustomerControllerInterface customerController;
+    private final CommunicatorInterface communicator;
+    private final UserInterface user;
 
     public AppointmentController(CommunicatorInterface communicator, UserInterface user, CustomerControllerInterface customerController) {
         this.communicator = communicator;
@@ -61,8 +61,8 @@ public class AppointmentController implements AppointmentControllerInterface {
         }).toArray(size -> new Appointment[size]);
         if (appointments.length > 0) {
             communicator.showAlert("This week's schedule is:", display);
-            for (int i = 0; i < appointments.length; i++) {
-                this.showAppointment(appointments[i]);
+            for (AppointmentInterface appointment : appointments) {
+                this.showAppointment(appointment);
             }
         } else {
             communicator.showAlert("Nothing currently scheduled:", display);
@@ -99,8 +99,8 @@ public class AppointmentController implements AppointmentControllerInterface {
         };
         if (appointments.length > 0) {
             communicator.showAlert("Your monthly schedule is:", display);
-            for (int i = 0; i < appointments.length; i++) {
-                this.showAppointment(appointments[i]);
+            for (AppointmentInterface appointment : appointments) {
+                this.showAppointment(appointment);
             }
         } else {
             communicator.showAlert("Your monthly schedule is empty:", display);
@@ -145,13 +145,12 @@ public class AppointmentController implements AppointmentControllerInterface {
     @Override
     public AppointmentInterface updateAppointment() {
         AppointmentInterface[] appointments = this.appointmentService.getAppointments(this.user.getUserName());
-        //pick appointment to update
         communicator.out("Appointments:");
         AppointmentInterface appointment = null;
         while (true) {
 
             for (int i = 0; i < appointments.length; i++) {
-                System.out.println((i + 1) + ") " + appointments[i].getTitle());
+                communicator.out((i + 1) + ") " + appointments[i].getTitle());
             }
             communicator.out("0) Create new Appointment");
             String response = communicator.askFor("Choose an option: ");
@@ -271,12 +270,12 @@ public class AppointmentController implements AppointmentControllerInterface {
                     if (communicator.confirm()) {
                         ZonedDateTime newEnd = this.askForDateTime("end", appointment.getStart());
                         this.verifyAvailability(newEnd, appointments);
-                        appointment.setStart(newEnd);
+                        appointment.setEnd(newEnd);
                     }
                 } else {
                     ZonedDateTime newEnd = this.askForDateTime("end", appointment.getStart());
                     this.verifyAvailability(newEnd, appointments);
-                    appointment.setStart(newEnd);
+                    appointment.setEnd(newEnd);
                 }
                 break;
             } catch (InvalidAppointmentTimeException e) {

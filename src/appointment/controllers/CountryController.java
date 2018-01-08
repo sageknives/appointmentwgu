@@ -18,9 +18,9 @@ import java.time.LocalDateTime;
  */
 public class CountryController implements CountryControllerInterface {
 
-    private CountryServiceInterface countryService = new CountryService();
-    private CommunicatorInterface communicator;
-    private UserInterface user;
+    private final CountryServiceInterface countryService = new CountryService();
+    private final CommunicatorInterface communicator;
+    private final UserInterface user;
 
     public CountryController(CommunicatorInterface communicator, UserInterface user) {
         this.communicator = communicator;

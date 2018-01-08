@@ -19,14 +19,13 @@ import java.util.UUID;
  * @author sagegatzke
  */
 public class CountryService extends BaseService implements CountryServiceInterface {
-    private final UUID provider = UUID.randomUUID();
 
     @Override
     public CountryInterface addCountry(CountryInterface country) {
         return this._addCountry(country);
     }
-    
-    private CountryInterface _addCountry(CountryInterface country){
+
+    private CountryInterface _addCountry(CountryInterface country) {
         String validQuery = getInsertStatement(country);
         try {
             Statement insertStatement = conn.createStatement();
@@ -34,8 +33,7 @@ public class CountryService extends BaseService implements CountryServiceInterfa
 
             insertStatement.closeOnCompletion();
         } catch (SQLException ex) {
-            //dbAppointments = null;
-            //ex.printStackTrace();
+            System.out.println(ex.toString());
         }
         return country;
     }
@@ -57,9 +55,7 @@ public class CountryService extends BaseService implements CountryServiceInterfa
             }
             validStatement.closeOnCompletion();
         } catch (SQLException ex) {
-            //dbAppointments = null;
-            //System.out.print(ex.toString());
-            //ex.printStackTrace();
+            System.out.println(ex.toString());
         }
         CountryInterface[] dbCountries = new CountryInterface[countries.size()];
         dbCountries = countries.toArray(dbCountries);
@@ -68,42 +64,42 @@ public class CountryService extends BaseService implements CountryServiceInterfa
 
     private String getSelectStatement() {
         return "Select "
-            + "co.countryId as countryId,"
-            + "co.country as country,"
-            + "co.createDate as createDate,"
-            + "co.createdBy as createdBy,"
-            + "co.lastUpdate as lastUpdate,"
-            + "co.lastUpdateBy as lastUpdateBy "
-            + "FROM country as co ";
+                + "co.countryId as countryId,"
+                + "co.country as country,"
+                + "co.createDate as createDate,"
+                + "co.createdBy as createdBy,"
+                + "co.lastUpdate as lastUpdate,"
+                + "co.lastUpdateBy as lastUpdateBy "
+                + "FROM country as co ";
     }
 
-    private String getInsertStatement(CountryInterface country){
+    private String getInsertStatement(CountryInterface country) {
         int id = Math.abs(UUID.randomUUID().hashCode());
         country.setCountryId(id);
         return "INSERT INTO country "
-            +"(`countryId`, "
-            +"`country`, "
-            +"`createDate`, "
-            +"`createdBy`, "
-            +"`lastUpdate`, "
-            +"`lastUpdateBy`) "
-            + "VALUES ("
-            + "'"+country.getCountryId()+"',"
-            + "'"+country.getCountry()+"', "
-            + "'"+country.getCreatedDate()+"', "
-            + "'"+country.getCreatedBy()+"', "
-            + "'"+country.getLastUpdate()+"', "
-            + "'"+country.getLastUpdatedBy()+"')";
+                + "(`countryId`, "
+                + "`country`, "
+                + "`createDate`, "
+                + "`createdBy`, "
+                + "`lastUpdate`, "
+                + "`lastUpdateBy`) "
+                + "VALUES ("
+                + "'" + country.getCountryId() + "',"
+                + "'" + country.getCountry() + "', "
+                + "'" + country.getCreatedDate() + "', "
+                + "'" + country.getCreatedBy() + "', "
+                + "'" + country.getLastUpdate() + "', "
+                + "'" + country.getLastUpdatedBy() + "')";
     }
-    
+
     private CountryInterface createFromResult(ResultSet result) throws SQLException {
         return new Country(
-            result.getInt("countryId"),
-            result.getString("country"),
-            result.getString("createdBy"),
-            result.getTimestamp("createDate").toLocalDateTime(),
-            result.getString("lastUpdateBy"),
-            result.getTimestamp("lastUpdate").toLocalDateTime()
+                result.getInt("countryId"),
+                result.getString("country"),
+                result.getString("createdBy"),
+                result.getTimestamp("createDate").toLocalDateTime(),
+                result.getString("lastUpdateBy"),
+                result.getTimestamp("lastUpdate").toLocalDateTime()
         );
     }
 }

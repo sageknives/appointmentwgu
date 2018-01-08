@@ -10,9 +10,7 @@ import appointment.models.AppointmentInterface;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -32,7 +30,6 @@ import java.util.HashMap;
  */
 public class AppointmentService extends BaseService implements AppointmentServiceInterface {
 
-    private final UUID provider = UUID.randomUUID();
 
     @Override
     public AppointmentInterface getAppointment(int appointmentId) {
@@ -41,7 +38,6 @@ public class AppointmentService extends BaseService implements AppointmentServic
 
     private AppointmentInterface _getAppointment(int appointmentId) {
         AppointmentInterface dbAppointment;
-        //String validAppointmentQuery = "SELECT * FROM appointment as app WHERE app.appointmentId = '" + appointment.getAppointmentId() + "'";
         String validAppointmentQuery = getSelectStatement()
                 + "where ap.appointmentId ='" + appointmentId + "'";
         try {
@@ -57,7 +53,7 @@ public class AppointmentService extends BaseService implements AppointmentServic
 
         } catch (SQLException ex) {
             dbAppointment = null;
-//            ex.printStackTrace();
+            System.out.println(ex.toString());
         }
         return dbAppointment;
     }
@@ -68,7 +64,7 @@ public class AppointmentService extends BaseService implements AppointmentServic
     }
 
     private AppointmentInterface[] _getAppointments(String userName) {
-        List<AppointmentInterface> appointments = new ArrayList<AppointmentInterface>();
+        List<AppointmentInterface> appointments = new ArrayList<>();
         String validAppointmentQuery = getSelectStatement();
         if (userName != null) {
             validAppointmentQuery += " WHERE ap.createdBy = '" + userName + "' or ap.lastUpdateBy = '" + userName + "'";
@@ -83,10 +79,8 @@ public class AppointmentService extends BaseService implements AppointmentServic
             }
             findAppointmentStatement.closeOnCompletion();
         } catch (SQLException ex) {
-            //dbAppointments = null;
-//            ex.printStackTrace();
+            System.out.println(ex.toString());
         }
-        //dbAppointments = (AppointmentInterface[]) appointments.toArray();
         AppointmentInterface[] dbAppointments = new AppointmentInterface[appointments.size()];
         dbAppointments = appointments.toArray(dbAppointments);
         return dbAppointments;
@@ -94,23 +88,21 @@ public class AppointmentService extends BaseService implements AppointmentServic
 
     @Override
     public HashMap getTypeCountPerMonth() {
-        HashMap typeMap;
-        typeMap = new HashMap<String, Integer>();
+        HashMap typeMap = new HashMap<String, Integer>();
         String validAppointmentQuery = getTypeCountByMonthSelectStatement();
-        String[] months = {"0","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
+        String[] months = {"0", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
         try {
             Statement findAppointmentStatement = conn.createStatement();
             ResultSet result = findAppointmentStatement.executeQuery(validAppointmentQuery);
 
             while (result.next()) {
-                
+
                 typeMap.put(months[result.getInt("month")], result.getInt("num"));
             }
             findAppointmentStatement.closeOnCompletion();
         } catch (SQLException ex) {
-            //dbAppointments = null;
-            ex.printStackTrace();
+            System.out.println(ex.toString());
         }
         return typeMap;
     }
@@ -128,8 +120,8 @@ public class AppointmentService extends BaseService implements AppointmentServic
 
             insertAppointmentStatement.closeOnCompletion();
         } catch (SQLException ex) {
-            //dbAppointments = null;
-            ex.printStackTrace();
+            System.out.println(ex.toString());
+
         }
         return appointment;
     }
@@ -147,8 +139,8 @@ public class AppointmentService extends BaseService implements AppointmentServic
 
             updateAppointmentStatement.closeOnCompletion();
         } catch (SQLException ex) {
-            //dbAppointments = null;
-            ex.printStackTrace();
+            System.out.println(ex.toString());
+
         }
         return appointment;
     }
@@ -170,7 +162,7 @@ public class AppointmentService extends BaseService implements AppointmentServic
     }
 
     private String getInsertStatement(AppointmentInterface appointment) {
-        int id = Math.abs(provider.hashCode());
+        int id = Math.abs(UUID.randomUUID().hashCode());
         appointment.setAppointmentId(id);
         return "INSERT INTO appointment "
                 + "(`appointmentId`, "

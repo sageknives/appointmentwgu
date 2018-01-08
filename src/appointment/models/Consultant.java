@@ -10,7 +10,7 @@ package appointment.models;
  * @author sagegatzke
  */
 public class Consultant implements ConsultantInterface {
-    private String consultantName;
+    private final String consultantName;
     private int consultantId;
     
     public Consultant(String consultantName, int consultantId){

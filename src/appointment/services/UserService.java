@@ -11,7 +11,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
-import java.util.UUID;
 import appointment.models.User;
 import appointment.models.UserInterface;
 import static appointment.services.BaseService.conn;
@@ -52,7 +51,7 @@ public class UserService extends BaseService implements UserServiceInterface {
 
         } catch (SQLException ex) {
             dbUser = null;
-            ex.printStackTrace();
+            System.out.println(ex.toString());
         }
         return dbUser;
     }
@@ -91,14 +90,15 @@ public class UserService extends BaseService implements UserServiceInterface {
             Statement createStatement = conn.createStatement();
             createStatement.execute(query);
             createStatement.closeOnCompletion();
-        } catch (SQLException exception) {
-            exception.printStackTrace();
+        } catch (SQLException ex) {
+            System.out.println(ex.toString());
         }
         return user;
     }
 
+    @Override
     public ConsultantInterface[] getConsultants() {
-        List<ConsultantInterface> consultants = new ArrayList<ConsultantInterface>();
+        List<ConsultantInterface> consultants = new ArrayList<>();
         String validQuery = getSelectStatement();
         try {
             Statement validStatement = conn.createStatement();
@@ -109,8 +109,7 @@ public class UserService extends BaseService implements UserServiceInterface {
             }
             validStatement.closeOnCompletion();
         } catch (SQLException ex) {
-            //dbAppointments = null;
-            ex.printStackTrace();
+            System.out.println(ex.toString());
         }
         ConsultantInterface[] dbConsultants = new Consultant[consultants.size()];
         dbConsultants = consultants.toArray(dbConsultants);

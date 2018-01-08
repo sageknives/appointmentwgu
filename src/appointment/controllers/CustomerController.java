@@ -19,10 +19,10 @@ import java.time.LocalDateTime;
  */
 public class CustomerController implements CustomerControllerInterface {
 
-    private CustomerServiceInterface customerService = new CustomerService();
-    private AddressControllerInterface addressController;
+    private final CustomerServiceInterface customerService = new CustomerService();
+    private final AddressControllerInterface addressController;
     private final CommunicatorInterface communicator;
-    private UserInterface user;
+    private final UserInterface user;
 
     public CustomerController(CommunicatorInterface communicator, UserInterface user) {
         this.communicator = communicator;
@@ -48,16 +48,11 @@ public class CustomerController implements CustomerControllerInterface {
                     communicator.out((i+1) + ") " + customers[i].getCustomerName());
                 }
             }
-            communicator.out("x) to go back");
-            communicator.out("or press return to keep the current selection");
+            if(currentCustomer != null) communicator.out("or press return to keep the current selection");
             String response = communicator.askFor("Choose an option: ");
             if (response.equals("0")) {
                 customer = this.addCustomer();
                 return customer;
-            }
-            if (response.equals("x")) {
-                //should probably throw something instead of nulling back
-                return null;
             }
             if(response.equals("") && currentCustomer != null){
                 return currentCustomer;
@@ -80,13 +75,7 @@ public class CustomerController implements CustomerControllerInterface {
 
     @Override
     public CustomerInterface addCustomer() {
-//        CountryInterface country = new Country();
-//        CityInterface city = new City();
-//        city.setCountry(country);
-//        AddressInterface address = new Address();
-//        address.setCity(city);
         CustomerInterface customer = new Customer();
-//        customer.setAddress(address);
 
         communicator.out("Add Customer:");
         while (true) {
@@ -118,13 +107,9 @@ public class CustomerController implements CustomerControllerInterface {
                 System.out.println((i+1) + ") " + customers[i].getCustomerName());
             }
             communicator.out("0) Create new Customer");
-            communicator.out("x) to go back");
             String response = communicator.askFor("Choose an option: ");
             if (response.equals("0")) {
                 return this.addCustomer();
-            }
-            if (response.equals("x")) {
-                return null;
             }
             if (communicator.isInt(response)) {
                 int selection = Integer.parseInt(response)-1;

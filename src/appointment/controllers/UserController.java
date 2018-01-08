@@ -18,13 +18,10 @@ import java.util.ResourceBundle;
  */
 public class UserController implements UserControllerInterface {
 
-    private UserServiceInterface userService = new UserService();
-    private UserInterface user;
-    private ResourceBundle rb;
+    private final UserServiceInterface userService = new UserService();
+    private final UserInterface user;
+    private final ResourceBundle rb;
 
-    public UserController(UserInterface user) {
-        this.user = user;
-    }
 
     public UserController(UserInterface user, ResourceBundle rb) {
         this.user = user;

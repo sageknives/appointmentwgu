@@ -17,7 +17,7 @@ import java.util.Scanner;
 public class Communicator implements CommunicatorInterface {
 
     private final Scanner in = new Scanner(System.in);
-    private ResourceBundle rb;
+    private final ResourceBundle rb;
 
     public Communicator(ResourceBundle rb) {
         this.rb = rb;

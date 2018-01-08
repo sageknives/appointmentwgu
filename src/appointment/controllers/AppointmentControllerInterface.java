@@ -7,7 +7,6 @@ package appointment.controllers;
 
 import appointment.models.AppointmentInterface;
 import appointment.models.SwitchInterface;
-import appointment.models.UserInterface;
 import java.util.HashMap;
 
 /**

@@ -38,9 +38,8 @@ public class CityService extends BaseService implements CityServiceInterface {
 
             insertStatement.closeOnCompletion();
         } catch (SQLException ex) {
-            //dbAppointments = null;
             System.out.println(ex.toString());
-            ex.printStackTrace();
+
         }
         return city;
     }
@@ -53,7 +52,7 @@ public class CityService extends BaseService implements CityServiceInterface {
     private CityInterface[] _getCities(int countryId) {
         List<CityInterface> cities = new ArrayList();
         String validQuery = getSelectStatement()
-            + "WHERE `countryId`='"+ countryId +"'";
+                + "WHERE `countryId`='" + countryId + "'";
         try {
             Statement validStatement = conn.createStatement();
             ResultSet result = validStatement.executeQuery(validQuery);
@@ -64,8 +63,7 @@ public class CityService extends BaseService implements CityServiceInterface {
             validStatement.closeOnCompletion();
         } catch (SQLException ex) {
             System.out.println(ex.toString());
-            //dbAppointments = null;
-            ex.printStackTrace();
+
         }
         CityInterface[] dbCities = new CityInterface[cities.size()];
         dbCities = cities.toArray(dbCities);
@@ -74,48 +72,48 @@ public class CityService extends BaseService implements CityServiceInterface {
 
     private String getSelectStatement() {
         return "Select "
-            + "ci.cityId as cityId,"
-            + "ci.city as city,"
-            + "ci.countryId as countryId,"
-            + "ci.createDate as createDate,"
-            + "ci.createdBy as createdBy,"
-            + "ci.lastUpdate as lastUpdate,"
-            + "ci.lastUpdateBy as lastUpdateBy "
-            + "FROM city as ci ";
+                + "ci.cityId as cityId,"
+                + "ci.city as city,"
+                + "ci.countryId as countryId,"
+                + "ci.createDate as createDate,"
+                + "ci.createdBy as createdBy,"
+                + "ci.lastUpdate as lastUpdate,"
+                + "ci.lastUpdateBy as lastUpdateBy "
+                + "FROM city as ci ";
     }
 
     private String getInsertStatement(CityInterface city) {
         int id = Math.abs(UUID.randomUUID().hashCode());
         city.setCityId(id);
         return "INSERT INTO city "
-            + "(`cityId`, "
-            + "`city`, "
-            + "`countryId`, "
-            + "`createDate`, "
-            + "`createdBy`, "
-            + "`lastUpdate`, "
-            + "`lastUpdateBy`) "
-            + "VALUES ("
-            + "'" + city.getCityId() + "',"
-            + "'" + city.getCity() + "', "
-            + "'" + city.getCountry().getCountryId() + "',"
-            + "'" + city.getCreatedDate() + "', "
-            + "'" + city.getCreatedBy() + "', "
-            + "'" + city.getLastUpdate() + "', "
-            + "'" + city.getLastUpdatedBy() + "')";
+                + "(`cityId`, "
+                + "`city`, "
+                + "`countryId`, "
+                + "`createDate`, "
+                + "`createdBy`, "
+                + "`lastUpdate`, "
+                + "`lastUpdateBy`) "
+                + "VALUES ("
+                + "'" + city.getCityId() + "',"
+                + "'" + city.getCity() + "', "
+                + "'" + city.getCountry().getCountryId() + "',"
+                + "'" + city.getCreatedDate() + "', "
+                + "'" + city.getCreatedBy() + "', "
+                + "'" + city.getLastUpdate() + "', "
+                + "'" + city.getLastUpdatedBy() + "')";
     }
 
     private CityInterface createFromResult(ResultSet result) throws SQLException {
         CountryInterface country = new Country();
         country.setCountryId(result.getInt("countryId"));
         return new City(
-            result.getInt("cityId"),
-            result.getString("city"),
-            country,
-            result.getString("createdBy"),
-            result.getTimestamp("createDate").toLocalDateTime(),
-            result.getString("lastUpdateBy"),
-            result.getTimestamp("lastUpdate").toLocalDateTime()
+                result.getInt("cityId"),
+                result.getString("city"),
+                country,
+                result.getString("createdBy"),
+                result.getTimestamp("createDate").toLocalDateTime(),
+                result.getString("lastUpdateBy"),
+                result.getTimestamp("lastUpdate").toLocalDateTime()
         );
     }
 }
