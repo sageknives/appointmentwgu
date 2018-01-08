@@ -6,6 +6,7 @@
 package appointment.controllers;
 
 import appointment.models.ConsultantInterface;
+import appointment.models.InvalidCredentialsException;
 import appointment.models.UserInterface;
 
 /**
@@ -14,7 +15,7 @@ import appointment.models.UserInterface;
  */
 public interface UserControllerInterface {
 
-    UserInterface login(UserInterface user);
+    UserInterface login(UserInterface user) throws InvalidCredentialsException;
     UserInterface register(UserInterface user);
     ConsultantInterface[] getConsultants();
 

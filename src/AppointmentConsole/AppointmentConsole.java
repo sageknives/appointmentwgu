@@ -15,9 +15,28 @@ import appointment.controllers.ReportController;
 import appointment.controllers.ReportControllerInterface;
 import appointment.controllers.UserController;
 import appointment.controllers.UserControllerInterface;
+import appointment.models.AppointmentInterface;
+import appointment.models.InvalidCredentialsException;
+import appointment.models.InvalidInputException;
 import appointment.models.MenuState;
+import appointment.models.SwitchInterface;
 import appointment.models.User;
 import appointment.models.UserInterface;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.ResourceBundle;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -32,6 +51,9 @@ public class AppointmentConsole {
     private AppointmentControllerInterface appointmentController;
     private ReportControllerInterface reportController;
     private CommunicatorInterface communicator;
+    private ResourceBundle rb;
+    private ScheduledExecutorService refreshReminder;
+    private final HashMap reminded = new HashMap<Integer, AppointmentInterface>();
 
     /**
      * @param args the command line arguments
@@ -42,53 +64,95 @@ public class AppointmentConsole {
     }
 
     public void start() {
-        communicator = new Communicator();
-        communicator.out("Welcome to your appointment app");
+        this.rb = ResourceBundle.getBundle("LoginText", Locale.getDefault());
+        communicator = new Communicator(rb);
+        communicator.out(rb.getString("welcomeMessage"));
         user = new User();
-        userController = new UserController(user);
+        userController = new UserController(user, rb);
         customerController = new CustomerController(communicator, user);
         appointmentController = new AppointmentController(communicator, user, customerController);
-        reportController = new ReportController(communicator,appointmentController,userController);
+        reportController = new ReportController(communicator, appointmentController, userController);
         
         while (true) {
-            displayMenu();
-            String response = communicator.askFor("Choose an option: ");
-            doMenuAction(response);
+            try {
+                displayMenu();
+                String response = communicator.askFor(rb.getString("chooseMessage"));
+                doMenuAction(response);
+            } catch (InvalidInputException e) {
+                communicator.out(e.getMessage());
+            }
         }
     }
 
     public void login() {
-        user.setUserName(communicator.askFor("Please enter your Username"));
-        user.setPassword(communicator.askFor("Please enter your Password"));
-        UserInterface dbUser = userController.login(user);
-        if (dbUser != null) {
+        user.setUserName(communicator.askFor(rb.getString("usernameRequestMessage"), true));
+        user.setPassword(communicator.askFor(rb.getString("passwordRequestMessage"), true));
+        try {
+            UserInterface dbUser = userController.login(user);
+            if (dbUser == null) {
+                throw new InvalidCredentialsException(rb.getString("invalidCredentials"));
+            }
             communicator.lineBreak();
-            communicator.out("Welcome " + dbUser.getUserName());
+            communicator.out(rb.getString("successMessage") + " " + dbUser.getUserName());
             menuState = MenuState.MAIN_MENU;
-        } else {
-            communicator.out("Invalid Credentials");
+            logActivity(user.getUserName(), true);
+            setReminders();
+        } catch (InvalidCredentialsException e) {
+            communicator.out(e.getMessage());
         }
     }
 
-    public void loginMenuAction(String request) {
+    public void setReminders() {
+        refreshReminder = Executors.newScheduledThreadPool(1);
+
+        Runnable reminderThread = () -> {
+            AppointmentInterface[] appointments = this.appointmentController.getAppointments();
+            LocalDateTime localNow = LocalDateTime.now(ZoneId.systemDefault());
+            ZonedDateTime now = ZonedDateTime.of(localNow.getYear(), localNow.getMonth().getValue(), localNow.getDayOfMonth(), localNow.getHour(), localNow.getMinute(), 0, 0, ZoneId.systemDefault());
+            for (AppointmentInterface appointment : appointments) {
+                ZonedDateTime start = appointment.getStart();
+                if (now.until(start, ChronoUnit.MINUTES) <= 15L
+                        && now.until(start, ChronoUnit.MINUTES) > 0L) {
+                    if (reminded.containsKey(appointment.getAppointmentId())) {
+                        AppointmentInterface foundAppointment = (AppointmentInterface) reminded.get(appointment.getAppointmentId());
+                        if (foundAppointment.getStart().isAfter(appointment.getStart())
+                                || foundAppointment.getStart().isEqual(appointment.getStart())) {
+                            continue;
+                        }
+                    }
+                    reminded.put(appointment.getAppointmentId(), appointment);
+                    communicator.out("Appointment: " + appointment.getTitle() + " starts in " + now.until(start, ChronoUnit.MINUTES) + " minutes.");
+                }
+            }
+        };
+
+        ScheduledFuture reminderResult = refreshReminder.scheduleAtFixedRate(reminderThread, 0, 1, TimeUnit.MINUTES);
+
+    }
+
+    public void loginMenuAction(String request) throws InvalidInputException {
         switch (request) {
             case "0": {
                 exitProgram();
-                break;
             }
             case "1": {
                 login();
                 break;
             }
             default: {
-                communicator.out("That is not a valid option");
+                throw new InvalidInputException(rb.getString("invalidOption"));
             }
         }
     }
 
-    public void mainMenuAction(String request) {
+    public void mainMenuAction(String request) throws InvalidInputException {
+        SwitchInterface choose = (isNew)->{
+            if(isNew) return this.appointmentController.addAppointment();
+            else return this.appointmentController.updateAppointment();
+        };
         switch (request) {
             case "0": {
+                logActivity(user.getUserName(), false);
                 exitProgram();
                 break;
             }
@@ -101,11 +165,11 @@ public class AppointmentConsole {
                 break;
             }
             case "3": {
-                this.appointmentController.addAppointment();
+                this.appointmentController.addOrUpdate(true, choose);
                 break;
             }
             case "4": {
-                this.appointmentController.updateAppointment();
+                this.appointmentController.addOrUpdate(false, choose);
                 break;
             }
             case "5": {
@@ -121,12 +185,12 @@ public class AppointmentConsole {
                 break;
             }
             default: {
-                communicator.out("That is not a valid option");
+                throw new InvalidInputException(rb.getString("invalidOption"));
             }
         }
     }
 
-    public void reportMenuAction(String request) {
+    public void reportMenuAction(String request) throws InvalidInputException {
         switch (request) {
             case "0": {
                 menuState = MenuState.MAIN_MENU;
@@ -145,12 +209,12 @@ public class AppointmentConsole {
                 break;
             }
             default: {
-                communicator.out("That is not a valid option");
+                throw new InvalidInputException(rb.getString("invalidOption"));
             }
         }
     }
 
-    public void doMenuAction(String request) {
+    public void doMenuAction(String request) throws InvalidInputException {
         switch (menuState) {
             case START_MENU: {
                 loginMenuAction(request);
@@ -219,214 +283,13 @@ public class AppointmentConsole {
         System.exit(0);
     }
 
-//    private CustomerInterface addCustomer() {
-//
-//        CountryInterface country = new Country();
-//        CityInterface city = new City();
-//        city.setCountry(country);
-//        AddressInterface address = new Address();
-//        address.setCity(city);
-//        CustomerInterface customer = new Customer();
-//        customer.setAddress(address);
-//
-//        System.out.println("Add Customer:");
-//        while (true) {
-//            customer.setCustomerName(askFor("Please enter the Customer's full name: ", customer.getCustomerName()));
-//            customer.setAddress(addAddress(customer.getAddress()));
-//            showCustomer(customer);
-//            if (confirm()) {
-//                customer = customerController.addCustomer(customer);
-//                break;
-//            }
-//        }
-//        return customer;
-//    }
-//
-//    private CustomerInterface updateCustomer() {
-//        System.out.println("Update Customer:");
-//        CustomerInterface[] customers = customerController.getCustomers();
-//        CustomerInterface customer = null;
-//        while (true) {
-//
-//            for (int i = 0; i < customers.length; i++) {
-//                System.out.println(i + ") " + customers[i].getCustomerName());
-//            }
-//            System.out.println("n) Create new Customer");
-//            System.out.println("x) to go back");
-//            String response = askFor("Choose an option: ");
-//            if (response.equals("n")) {
-//                return addCustomer();
-//            }
-//            if (response.equals("x")) {
-//                return null;
-//            }
-//            if (isInt(response)) {
-//                int selection = Integer.parseInt(response);
-//                if (selection > 0 && selection < customers.length) {
-//                    customer = customers[selection];
-//                    break;
-//                }
-//            }
-//            System.out.println("Invalid option");
-//        }
-//
-//        while (customer != null) {
-//            customer.setCustomerName(askFor("Please enter the Customer's full name: ", customer.getCustomerName()));
-//            customer.setAddress(addAddress(customer.getAddress()));
-//            showCustomer(customer);
-//            if (confirm()) {
-//                customer = customerController.updateCustomer(customer);
-//                break;
-//            }
-//        }
-//        return customer;
-//    }
-//
-//    private boolean isInt(String value) {
-//        try {
-//            Integer.parseInt(value);
-//            return true;
-//        } catch (NumberFormatException e) {
-//            return false;
-//        }
-//    }
-//
-//    private AppointmentInterface addAppointment() {
-//        CustomerInterface customer = new Customer();
-//        AppointmentInterface appointment = new Appointment();
-//        appointment.setCustomer(customer);
-//
-//        System.out.println("Add Appointment:");
-//        while (true) {
-//            appointment.setTitle(askFor("Please enter a Title: ", appointment.getTitle()));
-//            appointment.setDescription(askFor("Please enter a description: ", customer.getCustomerName()));
-//            appointment.setLocation(askFor("Please enter a location: ", customer.getCustomerName()));
-//            appointment.setContact(askFor("Please enter a contact: ", customer.getCustomerName()));
-//            appointment.setUrl(askFor("Please enter a url: ", customer.getCustomerName()));
-//            appointment.setStart(addDateTime(appointment.getStart()));
-//            appointment.setEnd(addDateTime(appointment.getEnd()));
-//            appointment.setCustomer(addCustomerToAppointment(appointment.getCustomer()));
-//            customer.setCustomerName(askFor("Please enter the Customer's full name: ", customer.getCustomerName()));
-//            customer.setAddress(addAddress(customer.getAddress()));
-//            showCustomer(customer);
-//            if (confirm()) {
-//                customer = customerController.addCustomer(customer);
-//                break;
-//            }
-//        }
-//        return appointment;
-//    }
-//
-//    private AppointmentInterface updateAppointment() {
-//        System.out.println("Update Appointment:");
-//        AppointmentInterface appointment = new Appointment();
-//        while (true) {
-//            // list consultant appointments
-//            //choose appointment or go back
-//            break;
-//        }
-//
-//        while (true) {
-//            //update appointment and confirm
-//            break;
-//        }
-//        return appointment;
-//    }
-//    private void showWeekSchedule() {
-//        System.out.println("Weekly Schedule:");
-//        //get weekly schedule
-//    }
-//
-//    private void showMonthSchedule() {
-//        System.out.println("Monthly Schedule:");
-//        //get monthly schedule
-//    }
-    private void showMonthlyAppointmentReport() {
-        System.out.println("Monthly appointment report:");
-        //get monthly appointment report
+    public void logActivity(String username, boolean loggingIn) {
+        LocalDateTime now = LocalDateTime.now();
+        String logText = now + ": " + username + (loggingIn ? " logged in." : " Logged out.");
+        try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("./logactivity.txt", true)))) {
+            out.println(logText);
+        } catch (IOException e) {
+            System.err.println(e);
+        }
     }
-
-    private void showConsultScheduleReport() {
-        System.out.println("Consultant Schedule Report:");
-        //get consultant schedule report
-    }
-
-    private void showMagicReport() {
-        System.out.println("Magic Report:");
-        //get magic report
-    }
-
-//    private AddressInterface addAddress(AddressInterface address) {
-//        address.setAddress(askFor("Please enter the Customer's Address 1", address.getAddress()));
-//        address.setAddress1(askFor("Please enter the Customer's Address 2", address.getAddress1()));
-//        //address.setCity(addCity(address.getCity()));
-//        address.setPostalCode(askFor("Please enter the Customer's Postal Code", address.getPostalCode()));
-//        //address.setCountry(addCountry(address.getCountry()));
-//        address.setPhone(askFor("Please enter the Customer's Phone number", address.getPhone()));
-//        return address;
-//    }
-//
-//    private CityInterface addCity(CityInterface city, CountryInterface country) {
-//        CityInterface[] cities = cityController.getCities(country.getCountryId());
-//        while (true) {
-//            for (int i = 0; i < cities.length; i++) {
-//                System.out.println(i + ") " + cities[i].getCity());
-//            }
-//            System.out.println(cities.length + ") " + city.getCity());
-//            String result = askFor("Choose a city or type a new one");
-//            if (isInt(result)) {
-//                int index = Integer.parseInt(result);
-//                if (index < cities.length) {
-//                    return cities[index];
-//                } else if (index > cities.length) {
-//                    System.out.println("Invalid Option");
-//                } else {
-//                    return city;
-//                }
-//            } else {
-//                CityInterface newCity = new City();
-//                newCity.setCity(result);
-//                newCity.setCityId(-1);
-//                newCity.setCountry(country);
-//                CityInterface savedCity = cityController.addCity(newCity);
-//                return savedCity;
-//            }
-//        }
-//
-//    }
-//
-//    private boolean confirm() {
-//        while (true) {
-//            String response = askFor("y) for yes \nn) for no");
-//            if (response.equals("y")) {
-//                return true;
-//            }
-//            if (response.equals("n")) {
-//                return false;
-//            }
-//            System.out.println("Invalid option");
-//        }
-//    }
-//
-//    private void showCustomer(CustomerInterface customer) {
-//        System.out.println("Customer Name: " + customer.getCustomerName());
-//        showAddress(customer.getAddress());
-//    }
-//
-//    private void showAddress(AddressInterface address) {
-//        System.out.println("Address: " + address.getAddress());
-//        System.out.println("Address1: " + address.getAddress1());
-//        //System.out.println("City: " + address.getCity().getCity());
-//        System.out.println("Postal Code: " + address.getPostalCode());
-//        //System.out.println("Country: " + address.getCity().getCountry().getCountry());
-//        System.out.println("Phone: " + address.getPhone());
-//    }
-//
-//    private CustomerInterface addCustomerToAppointment(CustomerInterface customer) {
-//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-//    }
-//
-//    private ZonedDateTime addDateTime(ZonedDateTime start) {
-//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-//    }
 }

@@ -3,12 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package appointment.services;
+package appointment.controllers;
 
 /**
  *
  * @author sagegatzke
  */
-public class SnoozeIncrementService {
-    
+@FunctionalInterface
+public interface MessageInterface {
+    void send(String message);
 }

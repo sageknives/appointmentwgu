@@ -3,14 +3,11 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/Users/sagegatzke/Documents/GitHub/school/appointmentwgu/src/appointment/services/AppointmentService.java</file>
-            <file>file:/Users/sagegatzke/Documents/GitHub/school/appointmentwgu/src/appointment/services/CountryService.java</file>
-            <file>file:/Users/sagegatzke/Documents/GitHub/school/appointmentwgu/src/appointment/controllers/CityController.java</file>
-            <file>file:/Users/sagegatzke/Documents/GitHub/school/appointmentwgu/src/appointment/controllers/CustomerController.java</file>
-            <file>file:/Users/sagegatzke/Documents/GitHub/school/appointmentwgu/src/appointment/controllers/AppointmentController.java</file>
-            <file>file:/Users/sagegatzke/Documents/GitHub/school/appointmentwgu/src/appointment/controllers/CustomerControllerInterface.java</file>
-            <file>file:/Users/sagegatzke/Documents/GitHub/school/appointmentwgu/src/appointment/services/CityService.java</file>
-            <file>file:/Users/sagegatzke/Documents/GitHub/school/appointmentwgu/src/appointment/controllers/AppointmentControllerInterface.java</file>
+            <file>file:/Users/sagegatzke/Documents/GitHub/school/appointmentwgu/src/appointment/controllers/CommunicatorInterface.java</file>
+            <file>file:/Users/sagegatzke/Documents/GitHub/school/appointmentwgu/src/appointment/services/AppointmentServiceInterface.java</file>
+            <file>file:/Users/sagegatzke/Documents/GitHub/school/appointmentwgu/src/appointment/controllers/ReportController.java</file>
+            <file>file:/Users/sagegatzke/Documents/GitHub/school/appointmentwgu/src/appointment/controllers/MessageInterface.java</file>
+            <file>file:/Users/sagegatzke/Documents/GitHub/school/appointmentwgu/src/appointment/controllers/Communicator.java</file>
         </group>
     </open-files>
 </project-private>

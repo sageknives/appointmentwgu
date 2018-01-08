@@ -9,11 +9,9 @@ package appointment.models;
  *
  * @author sagegatzke
  */
-public interface UpdateObserver {
-
-    /**
-     *
-     * @param obj
-     */
-    public void update(Object obj);
+public class OutOfRangeException extends Exception {
+    public OutOfRangeException(String message){
+        super(message);
+    }
+    
 }

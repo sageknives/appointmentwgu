@@ -24,6 +24,7 @@ import appointment.models.Country;
 import appointment.models.CountryInterface;
 import appointment.models.Customer;
 import appointment.models.CustomerInterface;
+import java.util.HashMap;
 
 /**
  *
@@ -32,6 +33,7 @@ import appointment.models.CustomerInterface;
 public class AppointmentService extends BaseService implements AppointmentServiceInterface {
 
     private final UUID provider = UUID.randomUUID();
+
     @Override
     public AppointmentInterface getAppointment(int appointmentId) {
         return _getAppointment(appointmentId);
@@ -41,7 +43,7 @@ public class AppointmentService extends BaseService implements AppointmentServic
         AppointmentInterface dbAppointment;
         //String validAppointmentQuery = "SELECT * FROM appointment as app WHERE app.appointmentId = '" + appointment.getAppointmentId() + "'";
         String validAppointmentQuery = getSelectStatement()
-            + "where ap.appointmentId ='" + appointmentId + "'";
+                + "where ap.appointmentId ='" + appointmentId + "'";
         try {
             Statement findAppointmentStatement = conn.createStatement();
             ResultSet result = findAppointmentStatement.executeQuery(validAppointmentQuery);
@@ -68,10 +70,10 @@ public class AppointmentService extends BaseService implements AppointmentServic
     private AppointmentInterface[] _getAppointments(String userName) {
         List<AppointmentInterface> appointments = new ArrayList<AppointmentInterface>();
         String validAppointmentQuery = getSelectStatement();
-        if(userName != null) {
+        if (userName != null) {
             validAppointmentQuery += " WHERE ap.createdBy = '" + userName + "' or ap.lastUpdateBy = '" + userName + "'";
         }
-        
+
         try {
             Statement findAppointmentStatement = conn.createStatement();
             ResultSet result = findAppointmentStatement.executeQuery(validAppointmentQuery);
@@ -91,11 +93,34 @@ public class AppointmentService extends BaseService implements AppointmentServic
     }
 
     @Override
+    public HashMap getTypeCountPerMonth() {
+        HashMap typeMap;
+        typeMap = new HashMap<String, Integer>();
+        String validAppointmentQuery = getTypeCountByMonthSelectStatement();
+        String[] months = {"0","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
+
+        try {
+            Statement findAppointmentStatement = conn.createStatement();
+            ResultSet result = findAppointmentStatement.executeQuery(validAppointmentQuery);
+
+            while (result.next()) {
+                
+                typeMap.put(months[result.getInt("month")], result.getInt("num"));
+            }
+            findAppointmentStatement.closeOnCompletion();
+        } catch (SQLException ex) {
+            //dbAppointments = null;
+            ex.printStackTrace();
+        }
+        return typeMap;
+    }
+
+    @Override
     public AppointmentInterface addAppointment(AppointmentInterface appointment) {
         return _addAppointment(appointment);
     }
-    
-    private AppointmentInterface _addAppointment(AppointmentInterface appointment){
+
+    private AppointmentInterface _addAppointment(AppointmentInterface appointment) {
         String validAppointmentQuery = getInsertStatement(appointment);
         try {
             Statement insertAppointmentStatement = conn.createStatement();
@@ -113,7 +138,7 @@ public class AppointmentService extends BaseService implements AppointmentServic
     public AppointmentInterface updateAppointment(AppointmentInterface appointment) {
         return _updateAppointment(appointment);
     }
-    
+
     private AppointmentInterface _updateAppointment(AppointmentInterface appointment) {
         String validAppointmentQuery = getUpdateStatement(appointment);
         try {
@@ -127,159 +152,167 @@ public class AppointmentService extends BaseService implements AppointmentServic
         }
         return appointment;
     }
-    
-    private String getUpdateStatement(AppointmentInterface appointment){
+
+    private String getUpdateStatement(AppointmentInterface appointment) {
         return "UPDATE appointment "
-            + "SET `title`='"+appointment.getTitle()+"', "
-            + "`description`='"+appointment.getDescription()+"', "
-            + "`location`='"+appointment.getLocation()+"', "
-            + "`contact`='"+appointment.getContact()+"', "
-            + "`url`='"+appointment.getUrl()+"', "
-            + "`start`='"+appointment.getStart().toLocalDateTime()+"', "
-            + "`end`='"+appointment.getEnd().toLocalDateTime()+"', "
-            + "`createDate`='"+appointment.getCreatedDate()+"', "
-            + "`createdBy`='"+appointment.getCreatedBy()+"', "
-            + "`lastUpdate`='"+appointment.getLastUpdate()+"', "
-            + "`lastUpdateBy`='"+appointment.getLastUpdatedBy()+"' "
-            + "WHERE `appointmentId`='"+appointment.getAppointmentId()+"'";
+                + "SET `title`='" + appointment.getTitle() + "', "
+                + "`description`='" + appointment.getDescription() + "', "
+                + "`location`='" + appointment.getLocation() + "', "
+                + "`contact`='" + appointment.getContact() + "', "
+                + "`url`='" + appointment.getUrl() + "', "
+                + "`start`='" + appointment.getStart().toLocalDateTime() + "', "
+                + "`end`='" + appointment.getEnd().toLocalDateTime() + "', "
+                + "`createDate`='" + appointment.getCreatedDate() + "', "
+                + "`createdBy`='" + appointment.getCreatedBy() + "', "
+                + "`lastUpdate`='" + appointment.getLastUpdate() + "', "
+                + "`lastUpdateBy`='" + appointment.getLastUpdatedBy() + "' "
+                + "WHERE `appointmentId`='" + appointment.getAppointmentId() + "'";
     }
-    
-    private String getInsertStatement(AppointmentInterface appointment){
+
+    private String getInsertStatement(AppointmentInterface appointment) {
         int id = Math.abs(provider.hashCode());
         appointment.setAppointmentId(id);
         return "INSERT INTO appointment "
-            +"(`appointmentId`, "
-            +"`customerId`, "
-            +"`title`, "
-            +"`description`, "
-            +"`location`, "
-            +"`contact`, "
-            +"`url`, "
-            +"`start`, "
-            +"`end`, "
-            +"`createDate`, "
-            +"`createdBy`, "
-            +"`lastUpdate`, "
-            +"`lastUpdateBy`) "
-            + "VALUES ("
-            + "'"+appointment.getAppointmentId()+"',"
-            + " "+appointment.getCustomer().getCustomerId()+", "
-            + "'"+appointment.getTitle()+"', "
-            + "'"+appointment.getDescription()+"', "
-            + "'"+appointment.getLocation()+"', "
-            + "'"+appointment.getContact()+"', "
-            + "'"+appointment.getUrl()+"', "
-            + "'"+appointment.getStart().toLocalDateTime()+"', "
-            + "'"+appointment.getEnd().toLocalDateTime()+"', "
-            + "'"+appointment.getCreatedDate()+"', "
-            + "'"+appointment.getCreatedBy()+"', "
-            + "'"+appointment.getLastUpdate()+"', "
-            + "'"+appointment.getLastUpdatedBy()+"')";
+                + "(`appointmentId`, "
+                + "`customerId`, "
+                + "`title`, "
+                + "`description`, "
+                + "`location`, "
+                + "`contact`, "
+                + "`url`, "
+                + "`start`, "
+                + "`end`, "
+                + "`createDate`, "
+                + "`createdBy`, "
+                + "`lastUpdate`, "
+                + "`lastUpdateBy`) "
+                + "VALUES ("
+                + "'" + appointment.getAppointmentId() + "',"
+                + " " + appointment.getCustomer().getCustomerId() + ", "
+                + "'" + appointment.getTitle() + "', "
+                + "'" + appointment.getDescription() + "', "
+                + "'" + appointment.getLocation() + "', "
+                + "'" + appointment.getContact() + "', "
+                + "'" + appointment.getUrl() + "', "
+                + "'" + appointment.getStart().toLocalDateTime() + "', "
+                + "'" + appointment.getEnd().toLocalDateTime() + "', "
+                + "'" + appointment.getCreatedDate() + "', "
+                + "'" + appointment.getCreatedBy() + "', "
+                + "'" + appointment.getLastUpdate() + "', "
+                + "'" + appointment.getLastUpdatedBy() + "')";
     }
 
     private String getSelectStatement() {
         return "Select "
-            + "ap.appointmentId as appointmentId,"
-            + "ap.title as title,"
-            + "ap.description as description,"
-            + "ap.location as location,"
-            + "ap.contact as contact,"
-            + "ap.url as url,"
-            + "ap.start as start,"
-            + "ap.end as end,"
-            + "ap.createDate as appointmentCreateDate,"
-            + "ap.createdBy as appointmentCreatedBy,"
-            + "ap.lastUpdate as appointmentLastUpdate,"
-            + "ap.lastUpdateBy as appointmentLastUpdateBy,"
-            + "cu.customerId as customerId,"
-            + "cu.customerName as customerName,"
-            + "cu.active  as active,"
-            + "cu.createDate as customerCreateDate,"
-            + "cu.createdBy as customerCreatedBy,"
-            + "cu.lastUpdate as customerLastUpdate,"
-            + "cu.lastUpdateBy as customerLastUpdateBy,"
-            + "ad.addressId as addressId,"
-            + "ad.address as address,"
-            + "ad.address2 as address2,"
-            + "ad.postalCode as postalCode,"
-            + "ad.phone as phone,"
-            + "ad.createDate as addressCreateDate,"
-            + "ad.createdBy as addressCreatedBy,"
-            + "ad.lastUpdate as addressLastUpdate,"
-            + "ad.lastUpdateBy as addressLastUpdateBy,"
-            + "ci.cityId as cityId,"
-            + "ci.city as city,"
-            + "ci.createDate as cityCreateDate,"
-            + "ci.createdBy as cityCreatedBy,"
-            + "ci.lastUpdate as cityLastUpdate,"
-            + "ci.lastUpdateBy as cityLastUpdateBy,"
-            + "co.countryId as countryId,"
-            + "co.country as country,"
-            + "co.createDate as countryCreateDate,"
-            + "co.createdBy as countryCreatedBy,"
-            + "co.lastUpdate as countryLastUpdate,"
-            + "co.lastUpdateBy as countryLastUpdateBy "
-            + "FROM appointment as ap "
-            + "join customer as cu on ap.customerId = cu.customerId "
-            + "join address as ad on cu.addressId = ad.addressId "
-            + "join city as ci on ci.cityId = ad.cityId "
-            + "join country as co on co.countryId = ci.countryId ";
+                + "ap.appointmentId as appointmentId,"
+                + "ap.title as title,"
+                + "ap.description as description,"
+                + "ap.location as location,"
+                + "ap.contact as contact,"
+                + "ap.url as url,"
+                + "ap.start as start,"
+                + "ap.end as end,"
+                + "ap.createDate as appointmentCreateDate,"
+                + "ap.createdBy as appointmentCreatedBy,"
+                + "ap.lastUpdate as appointmentLastUpdate,"
+                + "ap.lastUpdateBy as appointmentLastUpdateBy,"
+                + "cu.customerId as customerId,"
+                + "cu.customerName as customerName,"
+                + "cu.active  as active,"
+                + "cu.createDate as customerCreateDate,"
+                + "cu.createdBy as customerCreatedBy,"
+                + "cu.lastUpdate as customerLastUpdate,"
+                + "cu.lastUpdateBy as customerLastUpdateBy,"
+                + "ad.addressId as addressId,"
+                + "ad.address as address,"
+                + "ad.address2 as address2,"
+                + "ad.postalCode as postalCode,"
+                + "ad.phone as phone,"
+                + "ad.createDate as addressCreateDate,"
+                + "ad.createdBy as addressCreatedBy,"
+                + "ad.lastUpdate as addressLastUpdate,"
+                + "ad.lastUpdateBy as addressLastUpdateBy,"
+                + "ci.cityId as cityId,"
+                + "ci.city as city,"
+                + "ci.createDate as cityCreateDate,"
+                + "ci.createdBy as cityCreatedBy,"
+                + "ci.lastUpdate as cityLastUpdate,"
+                + "ci.lastUpdateBy as cityLastUpdateBy,"
+                + "co.countryId as countryId,"
+                + "co.country as country,"
+                + "co.createDate as countryCreateDate,"
+                + "co.createdBy as countryCreatedBy,"
+                + "co.lastUpdate as countryLastUpdate,"
+                + "co.lastUpdateBy as countryLastUpdateBy "
+                + "FROM appointment as ap "
+                + "join customer as cu on ap.customerId = cu.customerId "
+                + "join address as ad on cu.addressId = ad.addressId "
+                + "join city as ci on ci.cityId = ad.cityId "
+                + "join country as co on co.countryId = ci.countryId ";
+    }
+
+    private String getTypeCountByMonthSelectStatement() {
+        return "SELECT "
+                + "count(Distinct contact) AS num, "
+                + "MONTH(start) as month "
+                + "FROM appointment "
+                + "GROUP BY MONTH(start)";
     }
 
     private AppointmentInterface createAppointmentFromResult(ResultSet result) throws SQLException {
         CountryInterface dbCountry = new Country(
-            result.getInt("countryId"),
-            result.getString("country"),
-            result.getString("countryCreatedBy"),
-            result.getTimestamp("countryCreateDate").toLocalDateTime(),
-            result.getString("countryLastUpdateBy"),
-            result.getTimestamp("countryLastUpdate").toLocalDateTime()
+                result.getInt("countryId"),
+                result.getString("country"),
+                result.getString("countryCreatedBy"),
+                result.getTimestamp("countryCreateDate").toLocalDateTime(),
+                result.getString("countryLastUpdateBy"),
+                result.getTimestamp("countryLastUpdate").toLocalDateTime()
         );
         CityInterface dbCity = new City(
-            result.getInt("cityId"),
-            result.getString("city"),
-            dbCountry,
-            result.getString("cityCreatedBy"),
-            result.getTimestamp("cityCreateDate").toLocalDateTime(),
-            result.getString("cityLastUpdateBy"),
-            result.getTimestamp("cityLastUpdate").toLocalDateTime()
+                result.getInt("cityId"),
+                result.getString("city"),
+                dbCountry,
+                result.getString("cityCreatedBy"),
+                result.getTimestamp("cityCreateDate").toLocalDateTime(),
+                result.getString("cityLastUpdateBy"),
+                result.getTimestamp("cityLastUpdate").toLocalDateTime()
         );
         AddressInterface dbAddress = new Address(
-            result.getInt("addressId"),
-            result.getString("address"),
-            result.getString("address2"),
-            dbCity,
-            result.getString("postalCode"),
-            result.getString("phone"),
-            result.getString("addressCreatedBy"),
-            result.getTimestamp("addressCreateDate").toLocalDateTime(),
-            result.getString("addressLastUpdateBy"),
-            result.getTimestamp("addressLastUpdate").toLocalDateTime()
+                result.getInt("addressId"),
+                result.getString("address"),
+                result.getString("address2"),
+                dbCity,
+                result.getString("postalCode"),
+                result.getString("phone"),
+                result.getString("addressCreatedBy"),
+                result.getTimestamp("addressCreateDate").toLocalDateTime(),
+                result.getString("addressLastUpdateBy"),
+                result.getTimestamp("addressLastUpdate").toLocalDateTime()
         );
         CustomerInterface dbCustomer = new Customer(
-            result.getInt("customerId"),
-            result.getString("customerName"),
-            dbAddress,
-            result.getInt("active"),
-            result.getString("customerCreatedBy"),
-            result.getTimestamp("customerCreateDate").toLocalDateTime(),
-            result.getString("customerLastUpdateBy"),
-            result.getTimestamp("customerLastUpdate").toLocalDateTime()
+                result.getInt("customerId"),
+                result.getString("customerName"),
+                dbAddress,
+                result.getInt("active"),
+                result.getString("customerCreatedBy"),
+                result.getTimestamp("customerCreateDate").toLocalDateTime(),
+                result.getString("customerLastUpdateBy"),
+                result.getTimestamp("customerLastUpdate").toLocalDateTime()
         );
         AppointmentInterface dbAppointment = new Appointment(
-            result.getInt("appointmentId"),
-            dbCustomer,
-            result.getString("title"),
-            result.getString("description"),
-            result.getString("location"),
-            result.getString("contact"),
-            result.getString("url"),
-            result.getTimestamp("start").toLocalDateTime().atZone(ZoneId.of("UTC")),
-            result.getTimestamp("end").toLocalDateTime().atZone(ZoneId.of("UTC")),
-            result.getString("appointmentCreatedBy"),
-            result.getTimestamp("appointmentCreateDate").toLocalDateTime(),
-            result.getString("appointmentLastUpdateBy"),
-            result.getTimestamp("appointmentLastUpdate").toLocalDateTime()
+                result.getInt("appointmentId"),
+                dbCustomer,
+                result.getString("title"),
+                result.getString("description"),
+                result.getString("location"),
+                result.getString("contact"),
+                result.getString("url"),
+                result.getTimestamp("start").toLocalDateTime().atZone(ZoneId.systemDefault()),
+                result.getTimestamp("end").toLocalDateTime().atZone(ZoneId.systemDefault()),
+                result.getString("appointmentCreatedBy"),
+                result.getTimestamp("appointmentCreateDate").toLocalDateTime(),
+                result.getString("appointmentLastUpdateBy"),
+                result.getTimestamp("appointmentLastUpdate").toLocalDateTime()
         );
         return dbAppointment;
     }

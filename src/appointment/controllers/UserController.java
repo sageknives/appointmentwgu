@@ -6,42 +6,51 @@
 package appointment.controllers;
 
 import appointment.models.ConsultantInterface;
-import javafx.stage.Stage;
+import appointment.models.InvalidCredentialsException;
 import appointment.models.UserInterface;
 import appointment.services.UserService;
 import appointment.services.UserServiceInterface;
+import java.util.ResourceBundle;
 
 /**
  *
  * @author sagegatzke
  */
 public class UserController implements UserControllerInterface {
+
     private UserServiceInterface userService = new UserService();
     private UserInterface user;
-    
-    public UserController(UserInterface user){
+    private ResourceBundle rb;
+
+    public UserController(UserInterface user) {
         this.user = user;
     }
+
+    public UserController(UserInterface user, ResourceBundle rb) {
+        this.user = user;
+        this.rb = rb;
+    }
+
     @Override
-    public UserInterface login(UserInterface user){
-        if(user.getUserName().length() == 0 || user.getPassword().length() == 0){
-            return null;
+    public UserInterface login(UserInterface user) throws InvalidCredentialsException {
+        if (user.getUserName().length() == 0 || user.getPassword().length() == 0) {
+            throw new InvalidCredentialsException(this.rb.getString("requiredMessage"));
         }
         return this.userService.getUser(user);
     }
-    
+
     @Override
-    public UserInterface register(UserInterface user){
-        if(user.getUserName().length() == 0 || user.getPassword().length() == 0){
+    public UserInterface register(UserInterface user) {
+        if (user.getUserName().length() == 0 || user.getPassword().length() == 0) {
             return null;
         }
         UserInterface dbUser = this.userService.createUser(user);
         return dbUser;
     }
-    
-    public ConsultantInterface[] getConsultants(){
+
+    @Override
+    public ConsultantInterface[] getConsultants() {
         return this.userService.getConsultants();
     }
-    
-    
+
 }

@@ -6,6 +6,7 @@
 package appointment.services;
 
 import appointment.models.AppointmentInterface;
+import java.util.HashMap;
 
 /**
  *
@@ -20,5 +21,7 @@ public interface AppointmentServiceInterface {
     AppointmentInterface[] getAppointments(String userName);
 
     AppointmentInterface updateAppointment(AppointmentInterface appointment);
+    
+    HashMap getTypeCountPerMonth();
     
 }

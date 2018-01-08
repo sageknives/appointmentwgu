@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
  *
  * @author sagegatzke
  */
-public class User extends Base implements UserInterface, UpdateObserver{
+public class User extends Base implements UserInterface{
     private int userId;
     private String userName;
     private String password;
@@ -49,15 +49,5 @@ public class User extends Base implements UserInterface, UpdateObserver{
         this.userName = "";
         this.password = "";
         this.active = -1;
-    }
-
-    /**
-     *
-     * @param obj
-     */
-    @Override
-    public void update(Object obj) {
-        
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

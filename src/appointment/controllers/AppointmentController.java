@@ -8,20 +8,19 @@ package appointment.controllers;
 import appointment.models.Appointment;
 import appointment.models.AppointmentInterface;
 import appointment.models.CustomerInterface;
-import appointment.models.User;
+import appointment.models.InvalidAppointmentTimeException;
+import appointment.models.SwitchInterface;
 import appointment.models.UserInterface;
 import appointment.services.AppointmentService;
 import appointment.services.AppointmentServiceInterface;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Scanner;
+import java.util.HashMap;
 
 /**
  *
@@ -52,14 +51,23 @@ public class AppointmentController implements AppointmentControllerInterface {
         }
         ZonedDateTime end = sld.plusDays(8).atStartOfDay(ZoneId.systemDefault());
         ZonedDateTime start = sld.atStartOfDay(ZoneId.systemDefault());
-        communicator.lineBreak();
+        MessageInterface display = message -> {
+            communicator.lineBreak();
+            communicator.out(message);
+        };
+
         appointments = Arrays.stream(appointments).filter(a -> {
             return a.getStart().isAfter(start) && a.getEnd().isBefore(end);
         }).toArray(size -> new Appointment[size]);
-        this.communicator.out("This week's schedule is:");
-        for (int i = 0; i < appointments.length; i++) {
-            this.showAppointment(appointments[i]);
+        if (appointments.length > 0) {
+            communicator.showAlert("This week's schedule is:", display);
+            for (int i = 0; i < appointments.length; i++) {
+                this.showAppointment(appointments[i]);
+            }
+        } else {
+            communicator.showAlert("Nothing currently scheduled:", display);
         }
+
     }
 
     @Override
@@ -85,10 +93,17 @@ public class AppointmentController implements AppointmentControllerInterface {
         appointments = Arrays.stream(appointments).filter(a -> {
             return a.getStart().isAfter(start) && a.getEnd().isBefore(end);
         }).toArray(size -> new Appointment[size]);
-        communicator.lineBreak();
-        this.communicator.out("Your monthly schedule is:");
-        for (int i = 0; i < appointments.length; i++) {
-            this.showAppointment(appointments[i]);
+        MessageInterface display = message -> {
+            communicator.lineBreak();
+            communicator.out(message);
+        };
+        if (appointments.length > 0) {
+            communicator.showAlert("Your monthly schedule is:", display);
+            for (int i = 0; i < appointments.length; i++) {
+                this.showAppointment(appointments[i]);
+            }
+        } else {
+            communicator.showAlert("Your monthly schedule is empty:", display);
         }
     }
 
@@ -96,12 +111,17 @@ public class AppointmentController implements AppointmentControllerInterface {
     public AppointmentInterface[] getAppointments() {
         return this.appointmentService.getAppointments(user.getUserName());
     }
-    
+
     @Override
     public AppointmentInterface[] getAllAppointments() {
         return this.appointmentService.getAppointments(null);
     }
 
+    @Override
+    public AppointmentInterface addOrUpdate(boolean isNew, SwitchInterface switchInterface){
+        return switchInterface.choose(isNew);
+    }
+    
     @Override
     public AppointmentInterface addAppointment() {
         AppointmentInterface[] appointments = this.appointmentService.getAppointments(this.user.getUserName());
@@ -121,15 +141,60 @@ public class AppointmentController implements AppointmentControllerInterface {
         }
         return this.appointmentService.addAppointment(appointment);
     }
+    
+    @Override
+    public AppointmentInterface updateAppointment() {
+        AppointmentInterface[] appointments = this.appointmentService.getAppointments(this.user.getUserName());
+        //pick appointment to update
+        communicator.out("Appointments:");
+        AppointmentInterface appointment = null;
+        while (true) {
 
-    private boolean isAvailable(ZonedDateTime zdt, AppointmentInterface[] appointments) {
-        for (AppointmentInterface appointment : appointments) {
-            if (appointment.getStart().isBefore(zdt) && appointment.getEnd().isAfter(zdt)) {
-                this.communicator.out("is between");
-                return false;
+            for (int i = 0; i < appointments.length; i++) {
+                System.out.println((i + 1) + ") " + appointments[i].getTitle());
+            }
+            communicator.out("0) Create new Appointment");
+            String response = communicator.askFor("Choose an option: ");
+            if (response.equals("0")) {
+                return this.addAppointment();
+            }
+            if (communicator.isInt(response)) {
+                int selection = Integer.parseInt(response) - 1;
+                if (selection >= 0 && selection < appointments.length) {
+                    appointment = appointments[selection];
+                    break;
+                }
+            }
+            communicator.out("Invalid option");
+        }
+
+        this.communicator.out("Update Appointment");
+        while (true) {
+            appointment = updateAppointmentDetails(appointment, appointments);
+            showAppointment(appointment);
+            communicator.out("Appointment Confirmation:");
+            if (communicator.confirm()) {
+                appointment.setLastUpdatedBy(this.user.getUserName());
+                appointment.setLastUpdate(LocalDateTime.now());
+                break;
             }
         }
-        return true;
+        return this.appointmentService.updateAppointment(appointment);
+    }
+
+    private void verifyAvailability(ZonedDateTime zdt, AppointmentInterface[] appointments) throws InvalidAppointmentTimeException {
+        if (zdt.getDayOfWeek() == DayOfWeek.SATURDAY
+                || zdt.getDayOfWeek() == DayOfWeek.SUNDAY) {
+            throw new InvalidAppointmentTimeException("Weekends are not part of current bussiness hours.");
+        }
+        if (zdt.getHour() < 9 || zdt.getHour() > 17) {
+            throw new InvalidAppointmentTimeException("Current bussiness hours are between 9-5");
+        }
+        for (AppointmentInterface appointment : appointments) {
+            if (appointment.getStart().isBefore(zdt) && appointment.getEnd().isAfter(zdt)) {
+                throw new InvalidAppointmentTimeException("Appointment already during that time.");
+            }
+        }
     }
 
     private ZonedDateTime askForDateTime(String name, ZonedDateTime startTime) {
@@ -173,49 +238,7 @@ public class AppointmentController implements AppointmentControllerInterface {
         }
     }
 
-    @Override
-    public AppointmentInterface updateAppointment() {
-        AppointmentInterface[] appointments = this.appointmentService.getAppointments(this.user.getUserName());
-        //pick appointment to update
-        communicator.out("Appointments:");
-        AppointmentInterface appointment = null;
-        while (true) {
-
-            for (int i = 0; i < appointments.length; i++) {
-                System.out.println((i + 1) + ") " + appointments[i].getTitle());
-            }
-            communicator.out("0) Create new Appointment");
-            communicator.out("x) to go back");
-            String response = communicator.askFor("Choose an option: ");
-            if (response.equals("0")) {
-                return this.addAppointment();
-            }
-            if (response.equals("x")) {
-                return null;
-            }
-            if (communicator.isInt(response)) {
-                int selection = Integer.parseInt(response) - 1;
-                if (selection >= 0 && selection < appointments.length) {
-                    appointment = appointments[selection];
-                    break;
-                }
-            }
-            communicator.out("Invalid option");
-        }
-
-        this.communicator.out("Update Appointment");
-        while (true) {
-            appointment = updateAppointmentDetails(appointment, appointments);
-            showAppointment(appointment);
-            communicator.out("Appointment Confirmation:");
-            if (communicator.confirm()) {
-                appointment.setLastUpdatedBy(this.user.getUserName());
-                appointment.setLastUpdate(LocalDateTime.now());
-                break;
-            }
-        }
-        return this.appointmentService.updateAppointment(appointment);
-    }
+    
 
     private AppointmentInterface updateAppointmentDetails(AppointmentInterface appointment, AppointmentInterface[] appointments) {
         this.communicator.out("Choose a customer or add a new one");
@@ -227,41 +250,38 @@ public class AppointmentController implements AppointmentControllerInterface {
         appointment.setContact(communicator.askFor("Please enter an appointment type", appointment.getContact()));
         appointment.setUrl(communicator.askFor("Please enter a url", appointment.getUrl()));
         while (true) {
-            if (appointment.getStart() != null) {
-                showDateTime(appointment.getStart(), "Appointment starts at ");
-                communicator.out("Do you want to edit when the appointment starts?");
-                if (communicator.confirm()) {
-                    appointment.setStart(this.askForDateTime("start", null));
-                    if (!this.isAvailable(appointment.getStart(), appointments)) {
-                        this.communicator.out("Not an available time");
-                        continue;
+            try {
+                if (appointment.getStart() != null) {
+                    showDateTime(appointment.getStart(), "Appointment starts at ");
+                    communicator.out("Do you want to edit when the appointment starts?");
+                    if (communicator.confirm()) {
+                        ZonedDateTime newStart = this.askForDateTime("start", null);
+                        this.verifyAvailability(newStart, appointments);
+                        appointment.setStart(newStart);
+
                     }
+                } else {
+                    ZonedDateTime newStart = this.askForDateTime("start", null);
+                    this.verifyAvailability(newStart, appointments);
+                    appointment.setStart(newStart);
                 }
-            } else {
-                appointment.setStart(this.askForDateTime("start", null));
-                if (!this.isAvailable(appointment.getStart(), appointments)) {
-                    this.communicator.out("Not an available time");
-                    continue;
-                }
-            }
-            if (appointment.getEnd() != null) {
-                showDateTime(appointment.getEnd(), "Appointment ends at ");
-                communicator.out("Do you want to edit when the appointment ends?");
-                if (communicator.confirm()) {
-                    appointment.setEnd(this.askForDateTime("end", appointment.getStart()));
-                    if (!this.isAvailable(appointment.getEnd(), appointments)) {
-                        this.communicator.out("Not an available time");
-                        continue;
+                if (appointment.getEnd() != null) {
+                    showDateTime(appointment.getEnd(), "Appointment ends at ");
+                    communicator.out("Do you want to edit when the appointment ends?");
+                    if (communicator.confirm()) {
+                        ZonedDateTime newEnd = this.askForDateTime("end", appointment.getStart());
+                        this.verifyAvailability(newEnd, appointments);
+                        appointment.setStart(newEnd);
                     }
+                } else {
+                    ZonedDateTime newEnd = this.askForDateTime("end", appointment.getStart());
+                    this.verifyAvailability(newEnd, appointments);
+                    appointment.setStart(newEnd);
                 }
-            } else {
-                appointment.setEnd(this.askForDateTime("end", appointment.getStart()));
-                if (!this.isAvailable(appointment.getEnd(), appointments)) {
-                    this.communicator.out("Not an available time");
-                    continue;
-                }
+                break;
+            } catch (InvalidAppointmentTimeException e) {
+                communicator.out(e.getMessage());
             }
-            break;
         }
         return appointment;
     }
@@ -281,5 +301,10 @@ public class AppointmentController implements AppointmentControllerInterface {
         communicator.out("Customer: " + appointment.getCustomer().getCustomerName());
         showDateTime(appointment.getStart(), "Start: ");
         showDateTime(appointment.getEnd(), "End: ");
+    }
+
+    @Override
+    public HashMap getTypeCountPerMonth() {
+        return this.appointmentService.getTypeCountPerMonth();
     }
 }

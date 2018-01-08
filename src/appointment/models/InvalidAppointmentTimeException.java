@@ -3,12 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package appointment.services;
+package appointment.models;
 
 /**
  *
  * @author sagegatzke
  */
-public class ReminderService {
-    
+public class InvalidAppointmentTimeException extends Exception {
+    public InvalidAppointmentTimeException(String message){
+        super(message);
+    }
 }

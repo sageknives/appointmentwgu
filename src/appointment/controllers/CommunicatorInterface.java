@@ -11,7 +11,11 @@ package appointment.controllers;
  */
 public interface CommunicatorInterface {
 
+    String askFor(String request, String suggestion, boolean required);
+    
     String askFor(String request, String suggestion);
+    
+    String askFor(String request, boolean required);
 
     String askFor(String request);
 
@@ -24,7 +28,8 @@ public interface CommunicatorInterface {
     boolean isInt(String value);
 
     void out(String message);
-    
+
     void lineBreak();
 
+    void showAlert(String message, MessageInterface sender);
 }
